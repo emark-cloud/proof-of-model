@@ -39,6 +39,11 @@ const EMPTY: Deployment = {
 
 /** Deployed addresses per chain. Filled in by deploy scripts; null until deployed. */
 export const ADDRESSES: Record<ChainKey, Deployment> = {
-  arbitrumSepolia: { ...EMPTY },
+  arbitrumSepolia: {
+    Verifier: null, // CI-gated: fill after `cargo stylus deploy` on Rust machine (Phase 1 §2.3)
+    Registry: "0x8DA25285875A8CaFd665254bf70d160356D5866c",
+    ChallengeManager: "0x54BD1Fe0F5641d082a851Bb92fB79C07f913d254",
+    Escrow: "0xB1Ecc2F593339e4787E497bE22cD0554D52fC2Ce",
+  },
   arbitrumOne: { ...EMPTY },
 };

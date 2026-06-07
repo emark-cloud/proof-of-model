@@ -25,7 +25,7 @@ Status legend: [ ] todo · [~] in progress · [x] done · [!] blocked
 - [ ] stylus: deploy Verifier to Arbitrum Sepolia
 - [x] contracts: Registry + Staking (ERC-8004-style, register H_w + stake + reputation)
 - [x] contracts: ChallengeManager + Escrow skeletons (compile, forge test 17/17, ABIs synced)
-- [ ] contracts: deploy skeleton to Sepolia
+- [x] contracts: deploy skeleton to Sepolia (Registry 0x8DA2…866c, ChallengeManager 0x54BD…d254, Escrow 0xB1Ec…c2Ce)
 
 ## Phase 2 — Agents + money loop + challenge game
 - [ ] agents/provider: serve inference, commit R + output on-chain, serve openings
