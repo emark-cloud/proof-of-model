@@ -15,7 +15,7 @@ const outDir = resolve(root, "packages/contracts/out");
 const abiDir = resolve(root, "packages/shared/src/abis");
 
 // Contracts whose ABIs the agents / dashboard consume. Extend as Phase 1/2 land.
-const CONTRACTS = ["Registry", "IVerifier"];
+const CONTRACTS = ["Registry", "IVerifier", "ChallengeManager", "Escrow"];
 
 let wrote = 0;
 for (const name of CONTRACTS) {

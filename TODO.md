@@ -23,7 +23,8 @@ Status legend: [ ] todo · [~] in progress · [x] done · [!] blocked
 - [x] stylus: per-node fixed-point recompute looped along the sampled path + assert equality → PASS/FAIL
 - [x] stylus: unit tests vs golden fixtures
 - [ ] stylus: deploy Verifier to Arbitrum Sepolia
-- [ ] contracts: Registry + Staking (ERC-8004-style, register H_w + stake + reputation)
+- [x] contracts: Registry + Staking (ERC-8004-style, register H_w + stake + reputation)
+- [x] contracts: ChallengeManager + Escrow skeletons (compile, forge test 17/17, ABIs synced)
 - [ ] contracts: deploy skeleton to Sepolia
 
 ## Phase 2 — Agents + money loop + challenge game
