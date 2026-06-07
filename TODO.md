@@ -6,11 +6,11 @@ Status legend: [ ] todo · [~] in progress · [x] done · [!] blocked
 - [x] Read Offchain-Labs-paper.pdf (eprint 2026/541); confirm trace-commit + spot-check model; correct plan if needed → see phase0-paper-review.md (RandPathTest correction)
 - [x] Spike: Poseidon compiles + runs under Stylus/WASM → GO. Real arkworks/light-poseidon BN254 deployed+activated on Sepolia (0x299c9ba8…64f8), on-chain==circom oracle 3/3, ~110k gas. See phase0-spike-results.md
 - [~] Spike: x402 CDP facilitator (hello-world paid endpoint) — **DEFERRED** (user). Scaffold ready in `spikes/` (server+client, @x402 v2, Arbitrum One `eip155:42161`); run when wallet funded with ~$1–2 native USDC. CDP has NO Arbitrum Sepolia support — rail is Arbitrum One.
-- [ ] Decide go/no-go on Poseidon (else Keccak fallback) and x402 (else escrow / self-host fallback)
+- [x] Decide go/no-go on Poseidon (else Keccak fallback) and x402 (else escrow / self-host fallback) → both GO; locked in CLAUDE.md
 
 ## Phase 0.5 — Repo scaffold
 - [x] pnpm workspace + packages (model, stylus, contracts, agents, dashboard, shared). pnpm-workspace.yaml + root build/test scripts; git init'd; `pnpm build:ts` + tests green (shared 5, model 1, agents 1)
-- [x] Foundry init (contracts: forge-std via soldeer, Registry+IVerifier skeleton, `forge test` 2/2 pass, Deploy.s.sol), Next.js 14 init (dashboard: read-only spectator, `next build` OK), cargo-stylus scaffold (stylus: Verifier+fixed.rs mirroring proven Phase-0 spike — **cargo not installed in this env, build/check deferred to CI/Rust machine** via `cargo stylus check`)
+- [x] Foundry init (contracts: forge-std via soldeer, Registry+IVerifier skeleton, `forge test` 2/2 pass, Deploy.s.sol), Next.js 14 init (dashboard: read-only spectator, `next build` OK), cargo-stylus scaffold (stylus: Verifier+fixed.rs mirroring proven Phase-0 spike; cargo + wasm32 target confirmed available locally)
 - [x] shared: fixed-point Q47.16 (i64 storage, i128 accumulator, ReLU/identity) + Poseidon params (BN254 t=3, circom-compatible) + 3 golden hash vectors, network shape (3→8→4→2), chains+addresses — single source of truth, mirrored in stylus/src/fixed.rs
 - [x] CI: `.github/workflows/ci.yml` (ts build+test+dashboard / foundry build+test / stylus cargo test + stylus check); `scripts/sync-abis.ts` copies forge ABIs → packages/shared/src/abis (Registry, IVerifier), CI fails if stale
 
