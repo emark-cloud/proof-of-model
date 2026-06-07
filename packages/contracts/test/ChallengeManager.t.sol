@@ -4,6 +4,21 @@ pragma solidity ^0.8.28;
 import {Test} from "forge-std/Test.sol";
 import {ChallengeManager} from "../src/ChallengeManager.sol";
 import {Registry} from "../src/Registry.sol";
+import {IVerifier} from "../src/interfaces/IVerifier.sol";
+
+/// Minimal IVerifier whose verdict is fixed at construction — lets us exercise
+/// resolveChallenge's live verifier call without the Stylus deployment.
+contract MockVerifier is IVerifier {
+    bool internal immutable result;
+
+    constructor(bool result_) {
+        result = result_;
+    }
+
+    function verifyPath(bytes32, bytes32, bytes calldata) external view returns (bool) {
+        return result;
+    }
+}
 
 contract ChallengeManagerTest is Test {
     ChallengeManager internal cm;
@@ -59,5 +74,43 @@ contract ChallengeManagerTest is Test {
 
     function test_bountyBps_constant() public view {
         assertEq(cm.BOUNTY_BPS(), 1000);
+    }
+
+    // ─── resolveChallenge (live verifier call) ────────────────────────────────
+
+    function _openOn(ChallengeManager c) internal returns (uint256 id) {
+        id = c.openChallenge(address(0xCAFE), keccak256("trace-root"), "");
+    }
+
+    function test_resolveChallenge_passWhenVerifierReturnsTrue() public {
+        ChallengeManager c = new ChallengeManager(address(new MockVerifier(true)), address(registry));
+        uint256 id = _openOn(c);
+
+        vm.expectEmit(true, false, false, true);
+        emit ChallengeManager.Verified(id, true);
+        c.resolveChallenge(id, "");
+
+        (,,,, ChallengeManager.ChallengeStatus status) = c.challenges(id);
+        assertEq(uint8(status), uint8(ChallengeManager.ChallengeStatus.Passed));
+    }
+
+    function test_resolveChallenge_slashWhenVerifierReturnsFalse() public {
+        ChallengeManager c = new ChallengeManager(address(new MockVerifier(false)), address(registry));
+        uint256 id = _openOn(c);
+
+        vm.expectEmit(true, false, false, true);
+        emit ChallengeManager.Verified(id, false);
+        c.resolveChallenge(id, "");
+
+        (,,,, ChallengeManager.ChallengeStatus status) = c.challenges(id);
+        assertEq(uint8(status), uint8(ChallengeManager.ChallengeStatus.Slashed));
+    }
+
+    function test_resolveChallenge_revertsIfNotOpen() public {
+        ChallengeManager c = new ChallengeManager(address(new MockVerifier(true)), address(registry));
+        uint256 id = _openOn(c);
+        c.resolveChallenge(id, ""); // first resolve → status leaves Open
+        vm.expectRevert("ChallengeManager: not open");
+        c.resolveChallenge(id, "");
     }
 }

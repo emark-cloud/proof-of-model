@@ -109,6 +109,90 @@ contract RegistryTest is Test {
         registry.withdraw();
     }
 
+    function test_register_revertsOnDoubleRegister() public {
+        bytes32 hW = keccak256("model-weight-root");
+        registry.register{value: 1 ether}(hW);
+        vm.expectRevert("Registry: already registered");
+        registry.register{value: 1 ether}(hW);
+    }
+
+    // ─── Slash (manager-gated, money-moving core) ─────────────────────────────
+
+    /// Register provider 0xABCD with 1 ether and wire `mgr` as manager.
+    function _registerAndSetManager(address provider, address mgr) internal {
+        bytes32 hW = keccak256("model-weight-root");
+        vm.deal(provider, 1 ether);
+        vm.prank(provider);
+        registry.register{value: 1 ether}(hW);
+        registry.setManager(mgr);
+    }
+
+    function test_slash_reducesStakeForwardsToManagerAndCountsUp() public {
+        address provider = address(0xABCD);
+        address mgr = address(0xCAFE);
+        _registerAndSetManager(provider, mgr);
+
+        uint256 mgrBefore = mgr.balance;
+        vm.prank(mgr);
+        uint256 actual = registry.slash(provider, 0.4 ether);
+
+        assertEq(actual, 0.4 ether);
+        assertEq(mgr.balance - mgrBefore, 0.4 ether);
+        (, uint256 stake, bool active,,, uint64 slashed) = registry.providers(provider);
+        assertEq(stake, 0.6 ether);
+        assertTrue(active);
+        assertEq(slashed, 1);
+    }
+
+    function test_slash_capsAtStakeAndDeactivatesAtZero() public {
+        address provider = address(0xABCD);
+        address mgr = address(0xCAFE);
+        _registerAndSetManager(provider, mgr);
+
+        vm.prank(mgr);
+        uint256 actual = registry.slash(provider, 5 ether); // request exceeds stake
+
+        assertEq(actual, 1 ether); // capped at available stake
+        (, uint256 stake, bool active,,,) = registry.providers(provider);
+        assertEq(stake, 0);
+        assertFalse(active); // deactivated when fully slashed
+    }
+
+    function test_slash_revertsIfNotManager() public {
+        registry.setManager(address(0xCAFE));
+        vm.expectRevert("Registry: caller is not manager");
+        registry.slash(address(0xABCD), 1 ether); // caller is this contract, not manager
+    }
+
+    // ─── Reputation counters (onlyManager gate) ───────────────────────────────
+
+    function test_recordServedAndChallenged_incrementWhenManager() public {
+        address provider = address(0xABCD);
+        address mgr = address(0xCAFE);
+        _registerAndSetManager(provider, mgr);
+
+        vm.prank(mgr);
+        registry.recordServed(provider);
+        vm.prank(mgr);
+        registry.recordChallenged(provider);
+
+        (,,, uint64 served, uint64 challenged,) = registry.providers(provider);
+        assertEq(served, 1);
+        assertEq(challenged, 1);
+    }
+
+    function test_recordServed_revertsIfNotManager() public {
+        registry.setManager(address(0xCAFE));
+        vm.expectRevert("Registry: caller is not manager");
+        registry.recordServed(address(0xABCD));
+    }
+
+    function test_recordChallenged_revertsIfNotManager() public {
+        registry.setManager(address(0xCAFE));
+        vm.expectRevert("Registry: caller is not manager");
+        registry.recordChallenged(address(0xABCD));
+    }
+
     // Required so this test contract can receive ETH from Registry.withdraw().
     receive() external payable {}
 }

@@ -119,6 +119,37 @@ export function verifyMerkleProof(
   return current === root;
 }
 
+/** Canonical bottom-up direction bits for a leaf at `index` in a tree of `depth`
+ *  levels: dirs[i] = bit i of index (LSB first). Mirrors merkleProof's walk. */
+export function dirsFromIndex(index: number, depth: number): number[] {
+  const dirs: number[] = [];
+  let idx = index;
+  for (let i = 0; i < depth; i++) {
+    dirs.push(idx & 1);
+    idx >>= 1;
+  }
+  return dirs;
+}
+
+/**
+ * Verify that `leaf` is committed at POSITION `index` under `root`.
+ *
+ * SOUNDNESS: directions are derived from `index`, NOT taken from the (untrusted)
+ * proof. With prover-supplied direction bits a cheater could relocate any valid
+ * leaf to a different slot — membership without position binding. Twin of
+ * `verify_leaf_at_index` in packages/stylus/src/merkle.rs (the on-chain verifier);
+ * use this in any TS code that checks proofs it did not itself generate.
+ */
+export function verifyLeafAtIndex(
+  leaf: bigint,
+  siblings: readonly bigint[],
+  index: number,
+  root: bigint
+): boolean {
+  const dirs = dirsFromIndex(index, siblings.length);
+  return verifyMerkleProof(leaf, { siblings: [...siblings], dirs }, root);
+}
+
 // ---------------------------------------------------------------------------
 // Canonical leaf index maps (shared constants for TS prover + Rust verifier)
 // ---------------------------------------------------------------------------

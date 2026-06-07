@@ -13,6 +13,7 @@
 //!     dirs[i] = 0: node is LEFT child  → parent = poseidon2(node, sibling)
 //!     dirs[i] = 1: node is RIGHT child → parent = poseidon2(sibling, node)
 
+use alloc::vec::Vec;
 use stylus_sdk::alloy_primitives::U256;
 
 /// Fixed left-fold Poseidon hash over a non-empty slice of field elements.
@@ -39,4 +40,29 @@ pub fn verify_merkle_proof(leaf: U256, siblings: &[U256], dirs: &[u8], root: U25
         };
     }
     current == root
+}
+
+/// Canonical bottom-up direction bits for a leaf at `index` in a tree of `depth`
+/// levels: `dirs[i] = bit i of index` (LSB first). Mirrors `merkleProof`'s
+/// `idx % 2` / `idx /= 2` walk in packages/shared/src/merkle.ts.
+pub fn dirs_from_index(index: usize, depth: usize) -> Vec<u8> {
+    let mut dirs = Vec::with_capacity(depth);
+    let mut idx = index;
+    for _ in 0..depth {
+        dirs.push((idx & 1) as u8);
+        idx >>= 1;
+    }
+    dirs
+}
+
+/// Verify that `leaf` is committed at POSITION `index` under `root`.
+///
+/// SOUNDNESS: directions are derived from `index`, NOT taken from the prover. With
+/// prover-supplied direction bits a cheater could relocate any valid leaf to a
+/// different slot (membership without position binding) and feed, e.g., another
+/// layer's activations into the recompute. Deriving `dirs` from the canonical leaf
+/// index ties each opening to the exact committed position the verifier expects.
+pub fn verify_leaf_at_index(leaf: U256, siblings: &[U256], index: usize, root: U256) -> bool {
+    let dirs = dirs_from_index(index, siblings.len());
+    verify_merkle_proof(leaf, siblings, &dirs, root)
 }

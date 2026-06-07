@@ -22,11 +22,12 @@ contract Escrow {
     }
 
     /// @notice Lock ETH for a pending inference request.
-    /// @dev Phase 2: validate requestId uniqueness, record buyer for refund path.
-    function deposit(bytes32 requestId) external payable {
-        require(msg.value > 0, "Escrow: zero deposit");
-        deposits[requestId] += msg.value;
-        emit Deposited(requestId, msg.sender, msg.value);
+    /// @dev Phase 1 skeleton: release()/refund() are not yet implemented, so accepting
+    ///      ETH here would permanently lock it on the live deployment. Reverts until
+    ///      Phase 2 wires the full deposit/release/refund flow (validate requestId
+    ///      uniqueness, record buyer for refund path, apply protocol cut).
+    function deposit(bytes32 /*requestId*/) external payable {
+        revert("Escrow: not implemented (Phase 2)");
     }
 
     /// @notice Release escrowed ETH to provider after confirmed delivery.

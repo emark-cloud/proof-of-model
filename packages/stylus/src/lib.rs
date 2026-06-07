@@ -184,6 +184,11 @@ fn verify_proof_inner(trace_root: U256, weight_root: U256, proof_bytes: &[u8]) -
             Some(v) => v as usize,
             None => return false,
         };
+        // Bind the claimed node to a real slot in its layer — out-of-range indices
+        // must not alias another layer's leaves or padding.
+        if node_index >= LAYER_SIZES[layer] {
+            return false;
+        }
         let node_act = match dec.read_felt() {
             Some(v) => v,
             None => return false,
@@ -206,11 +211,13 @@ fn verify_proof_inner(trace_root: U256, weight_root: U256, proof_bytes: &[u8]) -
                 None => return false,
             }
         }
-        let (w_sibs, w_dirs) = match dec.read_proof() {
+        // Direction bits (`_*_dirs`) are intentionally ignored — positions are derived
+        // from the canonical leaf index below, not trusted from the prover.
+        let (w_sibs, _w_dirs) = match dec.read_proof() {
             Some(v) => v,
             None => return false,
         };
-        let (na_sibs, na_dirs) = match dec.read_proof() {
+        let (na_sibs, _na_dirs) = match dec.read_proof() {
             Some(v) => v,
             None => return false,
         };
@@ -222,27 +229,26 @@ fn verify_proof_inner(trace_root: U256, weight_root: U256, proof_bytes: &[u8]) -
             }
         }
 
-        // --- 1. Verify nodeActivation leaf ∈ trace_root ---
-        // (position encoded in na_dirs; trace_leaf_index(layer, node_index) is implicit)
-        let _ = trace_leaf_index(layer, node_index); // assert index is in-range in debug
-        if !merkle::verify_merkle_proof(node_act, &na_sibs, &na_dirs, trace_root) {
+        // --- 1. Verify nodeActivation leaf ∈ trace_root at its committed position ---
+        let na_index = trace_leaf_index(layer, node_index);
+        if !merkle::verify_leaf_at_index(node_act, &na_sibs, na_index, trace_root) {
             return false;
         }
 
-        // --- 2. Verify each parentAct[i] leaf ∈ trace_root ---
-        for (i, (pa, (pa_sibs, pa_dirs))) in parent_acts.iter().zip(pa_proofs.iter()).enumerate() {
-            let _ = trace_leaf_index(parent_layer, i);
-            if !merkle::verify_merkle_proof(*pa, pa_sibs, pa_dirs, trace_root) {
+        // --- 2. Verify each parentAct[i] leaf ∈ trace_root at parent-layer slot i ---
+        for (i, (pa, (pa_sibs, _pa_dirs))) in parent_acts.iter().zip(pa_proofs.iter()).enumerate() {
+            let pa_index = trace_leaf_index(parent_layer, i);
+            if !merkle::verify_leaf_at_index(*pa, pa_sibs, pa_index, trace_root) {
                 return false;
             }
         }
 
         // --- 3. Verify rowLeaf(L, j) = poseidon_many([weights.., bias]) ∈ weight_root ---
-        let _ = weight_leaf_index(layer, node_index);
+        let w_index = weight_leaf_index(layer, node_index);
         let mut row_felts: Vec<U256> = weight_row.clone();
         row_felts.push(bias_felt);
         let row_leaf = merkle::poseidon_many(&row_felts);
-        if !merkle::verify_merkle_proof(row_leaf, &w_sibs, &w_dirs, weight_root) {
+        if !merkle::verify_leaf_at_index(row_leaf, &w_sibs, w_index, weight_root) {
             return false;
         }
 
@@ -361,6 +367,41 @@ mod tests {
         assert!(
             !verify_proof_inner(trace_root, weight_root, &proof_bytes),
             "known-bad fixture must FAIL"
+        );
+    }
+
+    // Regression for the Merkle position-binding fix: positions are derived from the
+    // canonical leaf index, not trusted from the prover. Byte 0 is path_len; byte 1 is
+    // the first node's node_index (output layer, valid range 0..=1).
+
+    #[test]
+    fn out_of_range_node_index_fails() {
+        let v: Value = serde_json::from_str(FIXTURES_JSON).unwrap();
+        let g = &v["knownGood"];
+        let trace_root = parse_u256_hex(g["traceRoot"].as_str().unwrap());
+        let weight_root = parse_u256_hex(g["weightRoot"].as_str().unwrap());
+        let mut proof_bytes = parse_proof_bytes(g["pathProofHex"].as_str().unwrap());
+        proof_bytes[1] = 200; // node_index ≫ LAYER_SIZES[3] = 2
+        assert!(
+            !verify_proof_inner(trace_root, weight_root, &proof_bytes),
+            "out-of-range node_index must FAIL (no aliasing other leaves)"
+        );
+    }
+
+    #[test]
+    fn relocated_node_index_fails() {
+        let v: Value = serde_json::from_str(FIXTURES_JSON).unwrap();
+        let g = &v["knownGood"];
+        let trace_root = parse_u256_hex(g["traceRoot"].as_str().unwrap());
+        let weight_root = parse_u256_hex(g["weightRoot"].as_str().unwrap());
+        let mut proof_bytes = parse_proof_bytes(g["pathProofHex"].as_str().unwrap());
+        // Flip to the OTHER valid output node (0↔1): in-range, but the opened leaf no
+        // longer matches that committed position — only the position-binding check
+        // (not the recompute) rejects this.
+        proof_bytes[1] ^= 1;
+        assert!(
+            !verify_proof_inner(trace_root, weight_root, &proof_bytes),
+            "relocating a valid leaf to a different slot must FAIL"
         );
     }
 }
