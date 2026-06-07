@@ -1,3 +1,5 @@
+import { poseidon2 as _poseidon2 } from "poseidon-lite";
+
 /**
  * Poseidon parameters — SINGLE SOURCE OF TRUTH.
  *
@@ -34,6 +36,35 @@ export function toField(x: bigint): bigint {
  * TS, Rust, Solidity — MUST reproduce these exactly. Assert them in each
  * package's tests (Critical invariant: golden fixtures are the contract).
  */
+/**
+ * 2-input Poseidon compression (circom-compatible, BN254 scalar field, t=3).
+ *
+ * CRITICAL INVARIANT: byte-identical to the Rust light-poseidon and Solidity
+ * implementations (verified 3/3 on the POSEIDON_GOLDEN vectors in Phase 0).
+ * Re-exported here so callers in the monorepo don't need a direct poseidon-lite dep.
+ */
+export function poseidon2(a: bigint, b: bigint): bigint {
+  return _poseidon2([a, b]);
+}
+
+/**
+ * Signed fixed-point (Q47.16 i64) → BN254 scalar field element.
+ *
+ * CRITICAL INVARIANT: must be byte-identical to `felt_from_fixed` in
+ * packages/stylus/src/fixed.rs. The verifier recomputes a node activation as i64,
+ * applies this encoding, and compares the result to the opened Merkle leaf — any
+ * divergence silently fails every equality check.
+ *
+ *   x >= 0  →  x                   (non-negative i64 is already a valid field element)
+ *   x <  0  →  FIELD_MODULUS + x   (fold two's-complement into the field)
+ *
+ * Equivalent to ((x % FIELD_MODULUS) + FIELD_MODULUS) % FIELD_MODULUS, but the
+ * i64 range guarantees |x| < 2^63 << FIELD_MODULUS, so one conditional suffices.
+ */
+export function feltFromFixed(x: bigint): bigint {
+  return x >= 0n ? x : FIELD_MODULUS + x;
+}
+
 export const POSEIDON_GOLDEN: ReadonlyArray<{
   inputs: readonly [bigint, bigint];
   hash: bigint;

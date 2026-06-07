@@ -31,3 +31,18 @@ export const ACTIVATIONS: readonly Activation[] = ["relu", "relu", "identity"];
 
 /** Path length: one sampled node per non-input layer. */
 export const PATH_LENGTH = NUM_WEIGHT_LAYERS; // 3
+
+/**
+ * Deterministic weight generation seed — FROZEN. Do NOT change; altering the seed
+ * invalidates H_w and any fixtures or deployed commitments that depend on it.
+ *
+ * Generation scheme (§1.1 of phase1-plan.md) implemented in packages/model/src/weights.ts:
+ *   For each weight scalar at global index `idx`:
+ *     raw    = poseidon2(WEIGHT_SEED, BigInt(idx)) mod 2n**17n
+ *     signed = raw - 2n**16n                 // Q47.16 i64 in [-1, 1)  (weights)
+ *   For each bias scalar at global index `idx`:
+ *     raw    = poseidon2(WEIGHT_SEED, BigInt(idx)) mod 2n**16n
+ *     signed = raw - 2n**15n                 // Q47.16 i64 in [-0.5, 0.5)
+ *   Global indices are assigned layer-major over all weights then all biases.
+ */
+export const WEIGHT_SEED = 42n;

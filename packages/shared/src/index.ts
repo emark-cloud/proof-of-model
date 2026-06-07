@@ -9,3 +9,4 @@ export * from "./fixed-point.js";
 export * from "./poseidon.js";
 export * from "./network.js";
 export * from "./addresses.js";
+export * from "./merkle.js";
