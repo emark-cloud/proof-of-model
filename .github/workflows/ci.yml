@@ -66,5 +66,5 @@ jobs:
       - name: Install cargo-stylus
         run: cargo install --locked cargo-stylus
       - name: Stylus check (valid deployable WASM)
-        run: cargo stylus check
+        run: cargo stylus check --endpoint https://sepolia-rollup.arbitrum.io/rpc
         working-directory: packages/stylus

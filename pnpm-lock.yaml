@@ -76,10 +76,11 @@ importers:
         version: 5.9.3
 
   packages/shared:
-    devDependencies:
+    dependencies:
       poseidon-lite:
         specifier: ^0.3.0
         version: 0.3.0
+    devDependencies:
       tsx:
         specifier: ^4.19.2
         version: 4.22.4
