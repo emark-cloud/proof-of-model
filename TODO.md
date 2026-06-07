@@ -22,10 +22,10 @@ Status legend: [ ] todo · [~] in progress · [x] done · [!] blocked
 - [x] stylus: Merkle-proof verification (Poseidon)
 - [x] stylus: per-node fixed-point recompute looped along the sampled path + assert equality → PASS/FAIL
 - [x] stylus: unit tests vs golden fixtures
-- [ ] stylus: deploy Verifier to Arbitrum Sepolia
+- [x] stylus: deploy Verifier to Arbitrum Sepolia (0xd46e05f62b3a384bcf585f3c0247df080af8a057)
 - [x] contracts: Registry + Staking (ERC-8004-style, register H_w + stake + reputation)
 - [x] contracts: ChallengeManager + Escrow skeletons (compile, forge test 17/17, ABIs synced)
-- [x] contracts: deploy skeleton to Sepolia (Registry 0x8DA2…866c, ChallengeManager 0x54BD…d254, Escrow 0xB1Ec…c2Ce)
+- [x] contracts: deploy skeleton to Sepolia (Registry 0x94B1…Ec9, ChallengeManager 0x514C…f30, Escrow 0x4304…3DC)
 
 ## Phase 2 — Agents + money loop + challenge game
 - [ ] agents/provider: serve inference, commit R + output on-chain, serve openings
