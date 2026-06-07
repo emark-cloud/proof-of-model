@@ -15,10 +15,10 @@ Status legend: [ ] todo · [~] in progress · [x] done · [!] blocked
 - [x] CI: `.github/workflows/ci.yml` (ts build+test+dashboard / foundry build+test / stylus cargo test + stylus check); `scripts/sync-abis.ts` copies forge ABIs → packages/shared/src/abis (Registry, IVerifier), CI fails if stale
 
 ## Phase 1 — Reference model + verifier core
-- [ ] model: deterministic 3→8→4→2 fixed-point net (matches Q-format in shared)
-- [ ] model: activation trace + Poseidon-Merkle root R; weight root H_w
-- [ ] model: openPath(ρ) → proof bundle (per node on the output→input path: activation, weight row+bias, full parent-layer acts, Merkle paths)
-- [ ] model: golden known-good + known-bad fixtures
+- [x] model: deterministic 3→8→4→2 fixed-point net (matches Q-format in shared)
+- [x] model: activation trace + Poseidon-Merkle root R; weight root H_w
+- [x] model: openPath(ρ) → proof bundle (per node on the output→input path: activation, weight row+bias, full parent-layer acts, Merkle paths)
+- [x] model: golden known-good + known-bad fixtures
 - [ ] stylus: Merkle-proof verification (Poseidon)
 - [ ] stylus: per-node fixed-point recompute looped along the sampled path + assert equality → PASS/FAIL
 - [ ] stylus: unit tests vs golden fixtures
