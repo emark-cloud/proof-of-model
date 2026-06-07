@@ -23,6 +23,9 @@ export-abi = ["stylus-sdk/export-abi"]
 debug = ["stylus-sdk/debug"]
 mini-alloc = ["stylus-sdk/mini-alloc"]
 
+[dev-dependencies]
+serde_json = "1"
+
 [profile.release]
 codegen-units = 1
 strip = true

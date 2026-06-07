@@ -19,9 +19,9 @@ Status legend: [ ] todo · [~] in progress · [x] done · [!] blocked
 - [x] model: activation trace + Poseidon-Merkle root R; weight root H_w
 - [x] model: openPath(ρ) → proof bundle (per node on the output→input path: activation, weight row+bias, full parent-layer acts, Merkle paths)
 - [x] model: golden known-good + known-bad fixtures
-- [ ] stylus: Merkle-proof verification (Poseidon)
-- [ ] stylus: per-node fixed-point recompute looped along the sampled path + assert equality → PASS/FAIL
-- [ ] stylus: unit tests vs golden fixtures
+- [x] stylus: Merkle-proof verification (Poseidon)
+- [x] stylus: per-node fixed-point recompute looped along the sampled path + assert equality → PASS/FAIL
+- [x] stylus: unit tests vs golden fixtures
 - [ ] stylus: deploy Verifier to Arbitrum Sepolia
 - [ ] contracts: Registry + Staking (ERC-8004-style, register H_w + stake + reputation)
 - [ ] contracts: deploy skeleton to Sepolia
