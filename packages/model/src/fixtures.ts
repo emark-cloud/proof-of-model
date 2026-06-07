@@ -133,7 +133,7 @@ function fixtureToObject(f: Fixture) {
     weightRoot: hexBig(f.weightRoot),
     output: f.output.map(hexFixed),
     pathSpec: f.pathSpec,
-    pathProofHex: "0x" + Buffer.from(f.pathProofBytes).toString("hex"),
+    pathProofHex: "0x" + Array.from(f.pathProofBytes, b => b.toString(16).padStart(2, "0")).join(""),
     nodes: f.proof.nodes.map(n => ({
       layer: n.layer,
       nodeIndex: n.nodeIndex,
