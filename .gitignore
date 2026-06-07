@@ -1,0 +1,31 @@
+# Secrets — NEVER commit
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+.pnpm-store/
+dist/
+*.log
+*.tsbuildinfo
+
+# Next.js
+.next/
+.vercel/
+
+# Rust / Stylus
+target/
+**/target/
+
+# Foundry
+out/
+cache/
+broadcast/
+packages/contracts/dependencies/
+
+# OS
+.DS_Store
+
+# Windows zone-identifier junk
+*:Zone.Identifier

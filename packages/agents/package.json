@@ -1,0 +1,29 @@
+{
+  "name": "@proof/agents",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Provider (honest + cheat flag), buyer (x402), challenger (sample→open→verify→challenge).",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --import tsx ./src/*.test.ts",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@proof/model": "workspace:*",
+    "@proof/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

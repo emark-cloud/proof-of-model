@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ts:
+    name: TypeScript (shared / model / agents / dashboard)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build TS packages
+        run: pnpm build:ts
+      - name: Test TS packages
+        run: pnpm --filter @proof/shared --filter @proof/model --filter @proof/agents test
+      - name: Build dashboard
+        run: pnpm --filter @proof/dashboard build
+
+  contracts:
+    name: Contracts (Foundry)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+      - name: Install deps (soldeer)
+        run: forge soldeer install
+        working-directory: packages/contracts
+      - name: Build
+        run: forge build
+        working-directory: packages/contracts
+      - name: Test
+        run: forge test -vvv
+        working-directory: packages/contracts
+      - name: Sync ABIs into shared (must be committed & up to date)
+        run: |
+          corepack enable
+          pnpm install --frozen-lockfile
+          pnpm abis:sync
+          git diff --exit-code -- packages/shared/src/abis || \
+            (echo "::error::ABIs out of date — run 'pnpm abis:sync' and commit." && exit 1)
+
+  stylus:
+    name: Stylus verifier (Rust / WASM)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.91.0
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: packages/stylus
+      - name: Native unit tests
+        run: cargo test
+        working-directory: packages/stylus
+      - name: Install cargo-stylus
+        run: cargo install --locked cargo-stylus
+      - name: Stylus check (valid deployable WASM)
+        run: cargo stylus check
+        working-directory: packages/stylus

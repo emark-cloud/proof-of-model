@@ -1,0 +1,54 @@
+# Proof-of-Model — TODO
+
+Status legend: [ ] todo · [~] in progress · [x] done · [!] blocked
+
+## Phase 0 — De-risk (do first)
+- [x] Read Offchain-Labs-paper.pdf (eprint 2026/541); confirm trace-commit + spot-check model; correct plan if needed → see phase0-paper-review.md (RandPathTest correction)
+- [x] Spike: Poseidon compiles + runs under Stylus/WASM → GO. Real arkworks/light-poseidon BN254 deployed+activated on Sepolia (0x299c9ba8…64f8), on-chain==circom oracle 3/3, ~110k gas. See phase0-spike-results.md
+- [~] Spike: x402 CDP facilitator (hello-world paid endpoint) — **DEFERRED** (user). Scaffold ready in `spikes/` (server+client, @x402 v2, Arbitrum One `eip155:42161`); run when wallet funded with ~$1–2 native USDC. CDP has NO Arbitrum Sepolia support — rail is Arbitrum One.
+- [ ] Decide go/no-go on Poseidon (else Keccak fallback) and x402 (else escrow / self-host fallback)
+
+## Phase 0.5 — Repo scaffold
+- [x] pnpm workspace + packages (model, stylus, contracts, agents, dashboard, shared). pnpm-workspace.yaml + root build/test scripts; git init'd; `pnpm build:ts` + tests green (shared 5, model 1, agents 1)
+- [x] Foundry init (contracts: forge-std via soldeer, Registry+IVerifier skeleton, `forge test` 2/2 pass, Deploy.s.sol), Next.js 14 init (dashboard: read-only spectator, `next build` OK), cargo-stylus scaffold (stylus: Verifier+fixed.rs mirroring proven Phase-0 spike — **cargo not installed in this env, build/check deferred to CI/Rust machine** via `cargo stylus check`)
+- [x] shared: fixed-point Q47.16 (i64 storage, i128 accumulator, ReLU/identity) + Poseidon params (BN254 t=3, circom-compatible) + 3 golden hash vectors, network shape (3→8→4→2), chains+addresses — single source of truth, mirrored in stylus/src/fixed.rs
+- [x] CI: `.github/workflows/ci.yml` (ts build+test+dashboard / foundry build+test / stylus cargo test + stylus check); `scripts/sync-abis.ts` copies forge ABIs → packages/shared/src/abis (Registry, IVerifier), CI fails if stale
+
+## Phase 1 — Reference model + verifier core
+- [ ] model: deterministic 3→8→4→2 fixed-point net (matches Q-format in shared)
+- [ ] model: activation trace + Poseidon-Merkle root R; weight root H_w
+- [ ] model: openPath(ρ) → proof bundle (per node on the output→input path: activation, weight row+bias, full parent-layer acts, Merkle paths)
+- [ ] model: golden known-good + known-bad fixtures
+- [ ] stylus: Merkle-proof verification (Poseidon)
+- [ ] stylus: per-node fixed-point recompute looped along the sampled path + assert equality → PASS/FAIL
+- [ ] stylus: unit tests vs golden fixtures
+- [ ] stylus: deploy Verifier to Arbitrum Sepolia
+- [ ] contracts: Registry + Staking (ERC-8004-style, register H_w + stake + reputation)
+- [ ] contracts: deploy skeleton to Sepolia
+
+## Phase 2 — Agents + money loop + challenge game
+- [ ] agents/provider: serve inference, commit R + output on-chain, serve openings
+- [ ] agents/provider: cheat-mode flag (corrupt one neuron on command)
+- [ ] agents/buyer: x402 per-inference payment → on-chain receipt
+- [ ] contracts: Escrow/Fee (per-request receipt + protocol cut)
+- [ ] contracts: ChallengeManager (finalize window; challenge → call Verifier → slash + bounty)
+- [ ] agents/challenger: sample → demand opening → call Verifier → submit challenge → earn bounty
+- [ ] E2E happy path on Sepolia (honest provider PASS, fee released) with real tx hashes
+- [ ] E2E cheat path on Sepolia (cheater FAIL → slash + bounty) with real tx hashes
+
+## Phase 3 — Dashboard + deliverables + migrate
+- [ ] dashboard: scaffold (Next.js 14, wagmi/viem, RainbowKit, Tailwind, Framer Motion, design tokens)
+- [ ] dashboard: header + protocol stats bar (live aggregates)
+- [ ] dashboard: live event feed (SLASH red glow, PASS green pulse, tx links to Arbiscan)
+- [ ] dashboard: provider cards (both same H_w; one thrives, one slashed)
+- [ ] dashboard: wire watchContractEvent + poll fallback; deploy to Vercel
+- [ ] scripts/verify.ts: one-command judge path (bytecode + slashed state + SLASHED event + bounty → PASS)
+- [ ] scripts/benchmark: Stylus-vs-Solidity gas table for verify (reproducible)
+- [ ] docs: honesty-table, category-rejection paragraph, README, demo script
+- [ ] Migrate/redeploy to Arbitrum One
+- [ ] Record demo (one mechanic per sentence); buffer
+
+## Stretch (only after the spine works)
+- [ ] dashboard: event detail drawer (neuron coords, expected vs actual, Merkle path, gas badge)
+- [ ] dashboard: SLASH sound effect; auto-scroll pause-on-hover
+- [ ] Poseidon benchmark hardening

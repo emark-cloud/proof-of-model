@@ -1,0 +1,31 @@
+[package]
+name = "proof-verifier"
+version = "0.1.0"
+edition = "2024"
+description = "Stylus Verifier: Poseidon-Merkle proof verification + per-node fixed-point recompute along a sampled output->input path. The deep-engineering core."
+
+[dependencies]
+alloy-primitives = "1.5.7"
+alloy-sol-types = "1.5.7"
+stylus-sdk = "0.10.7"
+# Poseidon (circom-compatible, BN254) — proven in the Phase-0 spike (3/3 vs circom
+# oracle, ~110k gas on Sepolia). no_std for WASM.
+light-poseidon = { version = "0.3.0", default-features = false }
+ark-bn254 = { version = "0.5.0", default-features = false }
+ark-ff = { version = "0.5.0", default-features = false }
+
+[lib]
+crate-type = ["lib", "cdylib"]
+
+[features]
+default = ["mini-alloc"]
+export-abi = ["stylus-sdk/export-abi"]
+debug = ["stylus-sdk/debug"]
+mini-alloc = ["stylus-sdk/mini-alloc"]
+
+[profile.release]
+codegen-units = 1
+strip = true
+lto = true
+panic = "abort"
+opt-level = 3

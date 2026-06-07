@@ -1,0 +1,8 @@
+packages:
+  - "packages/shared"
+  - "packages/model"
+  - "packages/agents"
+  - "packages/dashboard"
+# Note: packages/contracts (Foundry) and packages/stylus (cargo/Stylus) are
+# part of the monorepo but are NOT pnpm/node packages — they have their own
+# toolchains (forge, cargo-stylus) and are excluded from the pnpm workspace.

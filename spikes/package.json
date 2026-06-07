@@ -1,0 +1,23 @@
+{
+  "name": "proof-spikes",
+  "private": true,
+  "type": "module",
+  "description": "Phase-0 de-risk spikes: off-chain Poseidon reference + x402 paid endpoint",
+  "scripts": {
+    "poseidon:ref": "node poseidon-ref.mjs",
+    "poseidon:verify": "node poseidon-verify.mjs",
+    "x402:server": "node x402-server.mjs",
+    "x402:client": "node x402-client.mjs"
+  },
+  "dependencies": {
+    "poseidon-lite": "^0.3.0",
+    "viem": "^2.21.0",
+    "express": "^4.21.0",
+    "dotenv": "^16.4.5",
+    "@coinbase/x402": "latest",
+    "@x402/express": "latest",
+    "@x402/evm": "latest",
+    "@x402/core": "latest",
+    "@x402/fetch": "latest"
+  }
+}

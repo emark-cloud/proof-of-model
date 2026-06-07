@@ -1,0 +1,26 @@
+{
+  "name": "proof-of-model",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Verifiable-inference marketplace for the agent economy on Arbitrum (Stylus + Solidity).",
+  "type": "module",
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "pnpm -r --filter \"@proof/*\" build",
+    "build:ts": "pnpm --filter @proof/shared --filter @proof/model --filter @proof/agents build",
+    "typecheck": "pnpm -r --filter \"@proof/*\" typecheck",
+    "test": "pnpm -r --filter \"@proof/*\" test",
+    "clean": "pnpm -r --filter \"@proof/*\" exec rm -rf dist tsconfig.tsbuildinfo",
+    "contracts:build": "forge build --root packages/contracts",
+    "contracts:test": "forge test --root packages/contracts",
+    "stylus:check": "cargo stylus check --manifest-path packages/stylus/Cargo.toml",
+    "abis:sync": "tsx scripts/sync-abis.ts"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
