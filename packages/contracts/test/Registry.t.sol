@@ -47,6 +47,20 @@ contract RegistryTest is Test {
         assertEq(registry.weightRootOf(address(this)), hW);
     }
 
+    function test_isActiveAndStakeOf_views() public {
+        bytes32 hW = keccak256("model-weight-root");
+        assertFalse(registry.isActive(address(this)));
+        assertEq(registry.stakeOf(address(this)), 0);
+
+        registry.register{value: 1 ether}(hW);
+        assertTrue(registry.isActive(address(this)));
+        assertEq(registry.stakeOf(address(this)), 1 ether);
+
+        registry.withdraw();
+        assertFalse(registry.isActive(address(this)));
+        assertEq(registry.stakeOf(address(this)), 0);
+    }
+
     // ─── Verifier wiring ──────────────────────────────────────────────────────
 
     function test_verifier_wiredAtConstruction() public view {

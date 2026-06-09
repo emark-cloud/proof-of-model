@@ -11,6 +11,16 @@
         "name": "registry_",
         "type": "address",
         "internalType": "address"
+      },
+      {
+        "name": "escrow_",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "finalizeWindow_",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
     "stateMutability": "nonpayable"
@@ -34,33 +44,38 @@
   },
   {
     "type": "function",
-    "name": "FINALIZE_WINDOW",
-    "inputs": [],
-    "outputs": [
+    "name": "commit",
+    "inputs": [
       {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
+        "name": "requestId",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "traceRoot",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "outputHash",
+        "type": "bytes32",
+        "internalType": "bytes32"
       }
     ],
-    "stateMutability": "view"
+    "outputs": [],
+    "stateMutability": "nonpayable"
   },
   {
     "type": "function",
-    "name": "challenges",
+    "name": "commitments",
     "inputs": [
       {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
+        "name": "requestId",
+        "type": "bytes32",
+        "internalType": "bytes32"
       }
     ],
     "outputs": [
-      {
-        "name": "challenger",
-        "type": "address",
-        "internalType": "address"
-      },
       {
         "name": "provider",
         "type": "address",
@@ -72,21 +87,57 @@
         "internalType": "bytes32"
       },
       {
-        "name": "openedAt",
-        "type": "uint256",
-        "internalType": "uint256"
+        "name": "outputHash",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "committedAt",
+        "type": "uint64",
+        "internalType": "uint64"
+      },
+      {
+        "name": "challenger",
+        "type": "address",
+        "internalType": "address"
       },
       {
         "name": "status",
         "type": "uint8",
-        "internalType": "enum ChallengeManager.ChallengeStatus"
+        "internalType": "enum ChallengeManager.Status"
       }
     ],
     "stateMutability": "view"
   },
   {
     "type": "function",
-    "name": "nextChallengeId",
+    "name": "escrow",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "contract Escrow"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "finalize",
+    "inputs": [
+      {
+        "name": "requestId",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "finalizeWindow",
     "inputs": [],
     "outputs": [
       {
@@ -102,28 +153,12 @@
     "name": "openChallenge",
     "inputs": [
       {
-        "name": "provider",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "traceRoot",
+        "name": "requestId",
         "type": "bytes32",
         "internalType": "bytes32"
-      },
-      {
-        "name": "",
-        "type": "bytes",
-        "internalType": "bytes"
       }
     ],
-    "outputs": [
-      {
-        "name": "challengeId",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable"
   },
   {
@@ -144,9 +179,9 @@
     "name": "resolveChallenge",
     "inputs": [
       {
-        "name": "challengeId",
-        "type": "uint256",
-        "internalType": "uint256"
+        "name": "requestId",
+        "type": "bytes32",
+        "internalType": "bytes32"
       },
       {
         "name": "pathProof",
@@ -175,6 +210,12 @@
     "name": "BountyPaid",
     "inputs": [
       {
+        "name": "requestId",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      },
+      {
         "name": "challenger",
         "type": "address",
         "indexed": true,
@@ -194,10 +235,10 @@
     "name": "ChallengeOpened",
     "inputs": [
       {
-        "name": "challengeId",
-        "type": "uint256",
+        "name": "requestId",
+        "type": "bytes32",
         "indexed": true,
-        "internalType": "uint256"
+        "internalType": "bytes32"
       },
       {
         "name": "challenger",
@@ -210,9 +251,34 @@
         "type": "address",
         "indexed": true,
         "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "Committed",
+    "inputs": [
+      {
+        "name": "requestId",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "provider",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
       },
       {
         "name": "traceRoot",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "outputHash",
         "type": "bytes32",
         "indexed": false,
         "internalType": "bytes32"
@@ -222,8 +288,33 @@
   },
   {
     "type": "event",
+    "name": "Finalized",
+    "inputs": [
+      {
+        "name": "requestId",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "provider",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
     "name": "Slashed",
     "inputs": [
+      {
+        "name": "requestId",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      },
       {
         "name": "provider",
         "type": "address",
@@ -250,10 +341,10 @@
     "name": "Verified",
     "inputs": [
       {
-        "name": "challengeId",
-        "type": "uint256",
+        "name": "requestId",
+        "type": "bytes32",
         "indexed": true,
-        "internalType": "uint256"
+        "internalType": "bytes32"
       },
       {
         "name": "ok",

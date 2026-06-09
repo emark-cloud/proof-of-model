@@ -85,6 +85,16 @@ contract Registry {
         return providers[provider].weightRoot;
     }
 
+    /// @notice Whether a provider is currently registered and active (stake intact).
+    function isActive(address provider) external view returns (bool) {
+        return providers[provider].active;
+    }
+
+    /// @notice Convenience view: a provider's current bonded stake.
+    function stakeOf(address provider) external view returns (uint256) {
+        return providers[provider].stake;
+    }
+
     // ─── Manager-gated reputation + slash functions ──────────────────────────
 
     /// @notice Increment a provider's served counter (called by ChallengeManager on delivery).

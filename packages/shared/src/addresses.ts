@@ -41,9 +41,10 @@ const EMPTY: Deployment = {
 export const ADDRESSES: Record<ChainKey, Deployment> = {
   arbitrumSepolia: {
     Verifier: "0xd46e05f62b3a384bcf585f3c0247df080af8a057",
-    Registry: "0x94B1F8eE3de350BDB6fC2CcbA249994B8C3C6Ec9",
-    ChallengeManager: "0x514C28452Da171f8b50fDc82a094ED68Eb9F6f30",
-    Escrow: "0x43043851ED9EC4663E42620c9C8a63Db0E1A13DC",
+    // Phase-2 redesign (requestId lifecycle + Escrow impl), finalizeWindow=30s.
+    Registry: "0xdda1b5edde69DEa1E0bd07801e444Ee2F76E10cc",
+    ChallengeManager: "0xff0BF72ce6C64ccAC8E9107fbC8bEaBCD46CE740",
+    Escrow: "0x5a64E86A4689fB22233e3eE3B2e3384c8533cF59",
   },
   arbitrumOne: { ...EMPTY },
 };
