@@ -1,7 +1,9 @@
 // Phase-0 x402 spike — SELLER (resource server).
 // CDP hosted facilitator on Arbitrum One mainnet (eip155:42161), price $0.01 native USDC.
 // CDP has no Arbitrum Sepolia support, hence mainnet (see CLAUDE.md locked-decision note).
-import "dotenv/config";
+import { config } from "dotenv";
+config(); // spikes/.env (non-secret config: PAY_TO, PORT)
+config({ path: new URL("../.env", import.meta.url) }); // root .env (shared secrets: CDP keys)
 import express from "express";
 import { facilitator } from "@coinbase/x402";
 import { paymentMiddleware, x402ResourceServer } from "@x402/express";

@@ -5,7 +5,7 @@ Status legend: [ ] todo · [~] in progress · [x] done · [!] blocked
 ## Phase 0 — De-risk (do first)
 - [x] Read Offchain-Labs-paper.pdf (eprint 2026/541); confirm trace-commit + spot-check model; correct plan if needed → see phase0-paper-review.md (RandPathTest correction)
 - [x] Spike: Poseidon compiles + runs under Stylus/WASM → GO. Real arkworks/light-poseidon BN254 deployed+activated on Sepolia (0x299c9ba8…64f8), on-chain==circom oracle 3/3, ~110k gas. See phase0-spike-results.md
-- [~] Spike: x402 CDP facilitator (hello-world paid endpoint) — **DEFERRED** (user). Scaffold ready in `spikes/` (server+client, @x402 v2, Arbitrum One `eip155:42161`); run when wallet funded with ~$1–2 native USDC. CDP has NO Arbitrum Sepolia support — rail is Arbitrum One.
+- [x] Spike: x402 CDP facilitator (hello-world paid endpoint) — **GO. Live on-chain settlement on Arbitrum One** (tx `0xaa38f38a…d3a6`, block 471967645): paid `GET /hello` → 200, buyer `0x2a30…05B6A` signs EIP-3009, CDP facilitator settles + sponsors gas (buyer gasless), 0.02 USDC → provider `0xe6Fd…E6bC`. Fixed 2 client bugs (`x402HTTPClient`→`x402Client`, `URL` shadow) + 2 run gotchas (Coinbase API egress → Proton WG tunnel; `self_send_not_allowed` → `PAY_TO != buyer`). Turnkey: `node x402-server.mjs` + `node x402-client.mjs`. See phase0-spike-results.md. CDP has NO Arbitrum Sepolia support — rail is Arbitrum One.
 - [x] Decide go/no-go on Poseidon (else Keccak fallback) and x402 (else escrow / self-host fallback) → both GO; locked in CLAUDE.md
 
 ## Phase 0.5 — Repo scaffold

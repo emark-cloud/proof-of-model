@@ -54,12 +54,58 @@ Arbitrum One mainnet** (`eip155:42161`, CDP-supported) with real-but-tiny USDC. 
 (buyer, `@x402/fetch` + viem account, EIP-3009 signature). Deps installed: `@x402/* 2.14.0`,
 `@coinbase/x402 2.1.0`, viem 2.52.
 
-**Blocker:** fund the buyer wallet with **~$1–2 native USDC on Arbitrum One**. No ETH needed
-(facilitator settles + sponsors gas). Then: run seller, run buyer, capture the settlement tx.
+**2026-06-10 run attempt — code verified, funded, credentialed; blocked on network egress to Coinbase.**
+
+Done (all green):
+- ✅ Verified every import in both scaffolds resolves against installed `@x402/* 2.14.0`.
+- ✅ **Fixed 2 real bugs in `x402-client.mjs`** that would have crashed the buyer:
+  1. used `x402HTTPClient().register(...)` — but in v2.14.0 `.register()` lives on `x402Client`
+     (the canonical pattern `wrapFetchWithPayment` documents); `x402HTTPClient` only wraps one.
+  2. local `const URL = …` shadowed the global `URL`, breaking the dotenv path resolution (TDZ).
+- ✅ Server route config + `paymentMiddleware(routes, server)` signature match v2.14.0.
+- ✅ `.env` wiring: secrets stay in root `.env` (CDP keys + `DEPLOYER_KEY`); `spikes/.env` holds
+  non-secret config; both scripts load root `.env` via `config({ path: ../.env })`.
+- ✅ **Funding confirmed:** buyer = `DEPLOYER_KEY` wallet `0x2a30…05B6A` holds **2.05 USDC** on
+  Arbitrum One (self-pay: `PAY_TO` = same wallet). No ETH needed.
+- ✅ **CDP keys present + well-formed** in root `.env` (ID 36 chars, secret 88 chars — Ed25519).
+- ✅ Server boots clean; facilitator config → `https://api.cdp.coinbase.com/platform/v2/x402`.
+
+**Transient blocker (resolved):** this WSL2 network silently dropped TCP SYN to every Coinbase
+**API** host (`api.cdp.coinbase.com` etc.) — upstream firewall/geo, not our tooling (docs +
+other Cloudflare hosts resolved fine; persisted with the Bash sandbox disabled). **Fixed by
+routing through a Proton WireGuard tunnel** (`sudo wg-quick up proton-wg-v4.conf`, US exit
+`159.26.100.219`). After that, `api.cdp.coinbase.com` → HTTP 200 and `getSupported()` returns
+**24 kinds including `eip155:42161`** (Arbitrum One). ✅
+
+**Self-pay gotcha:** with `payTo == buyer` the facilitator rejects the EIP-3009 transfer with
+`self_send_not_allowed`. Fixed by setting `PAY_TO` to a distinct address (provider-honest wallet
+`0xe6Fd…E6bC`); buyer stays the `DEPLOYER_KEY` wallet that holds the USDC.
+
+### ✅ GO — live x402 settlement on Arbitrum One (2026-06-10)
+
+Real paid `GET /hello` → HTTP 200, USDC settled on-chain by the CDP facilitator (buyer paid **no
+ETH** — facilitator sponsored gas):
+
+| field | value |
+|---|---|
+| settlement tx | `0xaa38f38ac3e8d3936592fe4fd007a68b36f7faad106c7a0e1896ce56dc53d3a6` (block 471967645) |
+| further txs | `0x96bb7d59b2ff892f9c83e819527686a250b784d87d9c3e67de980f8177f482c8` (turnkey re-run) |
+| buyer (payer) | `0x2a30…05B6A` (`DEPLOYER_KEY`), gasless |
+| payTo (provider) | `0xe6Fd…E6bC` — received **0.02 USDC** across the runs |
+| facilitator (gas payer) | `0x68a96f41ff1e9f2e7b591a931a4ad224e7c07863` (CDP) |
+| asset / amount | native USDC `0xaf88…5831`, `10000` = $0.01/call |
+| gasUsed | 86,708 |
+
+Buyer USDC `2.050996 → 2.030996` (−$0.02); provider `0 → 0.02`. Confirms the full x402 loop:
+buyer signs EIP-3009, CDP facilitator verifies + settles + sponsors gas, USDC moves on Arbitrum One.
+
+**Turnkey:** `node x402-server.mjs`, then (new shell) `node x402-client.mjs` — prints the
+settlement tx + Arbiscan link. Requires the tunnel up and `PAY_TO != buyer`.
 
 ---
 
 ## Go/no-go (task 4)
 - **Poseidon: GO** (this doc).
-- **x402: pending** the funded run on Arbitrum One. Fallbacks if it disappoints: self-hosted
-  facilitator on Sepolia, or minimal escrow.
+- **x402: GO — live on-chain settlement confirmed on Arbitrum One** (tx above). Scaffold verified,
+  wallet funded, CDP keys working, gasless EIP-3009 settlement proven. Fallbacks if ever needed:
+  self-hosted facilitator (x402.rs), or the minimal escrow rail (already live on Sepolia, Phase 2).
