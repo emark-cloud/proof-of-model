@@ -8,12 +8,27 @@ importers:
 
   .:
     devDependencies:
+      '@proof/agents':
+        specifier: workspace:*
+        version: link:packages/agents
+      '@proof/model':
+        specifier: workspace:*
+        version: link:packages/model
+      '@proof/shared':
+        specifier: workspace:*
+        version: link:packages/shared
+      '@types/node':
+        specifier: ^20.17.0
+        version: 20.19.42
       tsx:
         specifier: ^4.19.2
         version: 4.22.4
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
+      viem:
+        specifier: ^2.21.0
+        version: 2.52.2(typescript@5.9.3)(zod@3.25.76)
 
   packages/agents:
     dependencies:

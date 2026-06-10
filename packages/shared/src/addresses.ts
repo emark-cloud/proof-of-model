@@ -40,11 +40,17 @@ const EMPTY: Deployment = {
 /** Deployed addresses per chain. Filled in by deploy scripts; null until deployed. */
 export const ADDRESSES: Record<ChainKey, Deployment> = {
   arbitrumSepolia: {
-    Verifier: "0xd46e05f62b3a384bcf585f3c0247df080af8a057",
+    // Phase-2 redeploy: current Stylus source with the ABI-signature fix — Rust
+    // verify_path now takes bytes32/bytes (was U256/Vec<u8>, which Stylus exposed as
+    // uint256/uint8[], a selector mismatch vs IVerifier that reverted every call).
+    // The original d52f6b0 deploy (0xd46e…a057) had the same latent mismatch.
+    Verifier: "0xe19dfd6abae5b0b815dd6b3d8f90126fe68b79ae",
     // Phase-2 redesign (requestId lifecycle + Escrow impl), finalizeWindow=30s.
-    Registry: "0xdda1b5edde69DEa1E0bd07801e444Ee2F76E10cc",
-    ChallengeManager: "0xff0BF72ce6C64ccAC8E9107fbC8bEaBCD46CE740",
-    Escrow: "0x5a64E86A4689fB22233e3eE3B2e3384c8533cF59",
+    // Redeployed wired to the fixed verifier above — the manager's `verifier` is
+    // immutable and Registry/Escrow managers are set-once, so the whole stack moves.
+    Registry: "0x35198835f689e05bB363f09472360b5D9a44711b",
+    ChallengeManager: "0xc3135c7DbB5EcB87a4F99a538318d968079e96A3",
+    Escrow: "0x6149f5fB00ec427727e67DD51E7278ED0Bf553cd",
   },
   arbitrumOne: { ...EMPTY },
 };

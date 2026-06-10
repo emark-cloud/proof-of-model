@@ -16,7 +16,11 @@ pub mod fixed;
 pub mod merkle;
 
 use alloc::vec::Vec;
-use stylus_sdk::{alloy_primitives::U256, prelude::*};
+use stylus_sdk::{
+    abi::Bytes,
+    alloy_primitives::{FixedBytes, U256},
+    prelude::*,
+};
 
 use ark_bn254::Fr;
 use ark_ff::{BigInteger, PrimeField};
@@ -76,13 +80,21 @@ impl Verifier {
     /// Returns true iff every node on the output→input path:
     ///   (a) opens correctly from trace_root and weight_root via Merkle proofs, and
     ///   (b) its activation recomputes correctly from its weight row + parent activations.
+    /// @dev Params are `bytes32`/`bytes` (not `uint256`/`uint8[]`) so the ABI
+    /// selector matches `IVerifier.verifyPath(bytes32,bytes32,bytes)` — Stylus maps
+    /// Rust `U256`→`uint256` and `Vec<u8>`→`uint8[]`, which would mismatch the
+    /// Solidity interface + every off-chain caller. Convert to U256/&[u8] internally.
     pub fn verify_path(
         &self,
-        trace_root: U256,
-        weight_root: U256,
-        path_proof: Vec<u8>,
+        trace_root: FixedBytes<32>,
+        weight_root: FixedBytes<32>,
+        path_proof: Bytes,
     ) -> bool {
-        verify_proof_inner(trace_root, weight_root, &path_proof)
+        verify_proof_inner(
+            U256::from_be_bytes::<32>(trace_root.0),
+            U256::from_be_bytes::<32>(weight_root.0),
+            path_proof.as_ref(),
+        )
     }
 
     pub fn verified_count(&self) -> U256 {

@@ -328,19 +328,21 @@ the critical path** (deferred to Phase-3 migrate).
 
 ## 4. Acceptance criteria (Phase 2 "done")
 
-- [ ] `ChallengeManager` (commit/finalize/openChallenge/resolveChallenge, requestId-keyed,
+- [x] `ChallengeManager` (commit/finalize/openChallenge/resolveChallenge, requestId-keyed,
       reads committed root) + `Escrow` (deposit/release/refund, protocol cut, manager-gated)
       fully implemented; `forge test` green incl. lifecycle, window, slash/bounty/refund, and
       access-control cases using the golden `pathProof`.
-- [ ] ABIs synced; contracts re-deployed to Sepolia; `ADDRESSES.arbitrumSepolia` updated.
-- [ ] `provider` (honest + cheat), `buyer` (escrow rail), `challenger` (multi-sample) implemented;
+- [x] ABIs synced; contracts re-deployed to Sepolia; `ADDRESSES.arbitrumSepolia` updated.
+      (Verifier + Registry/Escrow/ChallengeManager redeployed — see `phase2-runlog.md` for
+      the ABI-selector fix that forced the verifier + stack redeploy.)
+- [x] `provider` (honest + cheat), `buyer` (escrow rail), `challenger` (multi-sample) implemented;
       `@proof/agents` builds; unit tests green (cheat corruption == `buildBadFixture`; sample loop
       catches the cheat, passes the honest case).
-- [ ] **E2E happy path on Sepolia** — honest provider PASS, fee released (minus 5% cut), `served++`
-      — with real tx hashes recorded.
-- [ ] **E2E cheat path on Sepolia** — cheater FAIL → full stake slashed, 10% bounty to challenger,
-      buyer refunded, `Slashed` event — with real tx hashes recorded.
-- [ ] x402 buyer rail implemented behind `PAYMENT_RAIL` flag (live-run deferred; documented).
+- [x] **E2E happy path on Sepolia** — honest provider PASS, fee released (minus 5% cut), `served++`
+      — with real tx hashes recorded (`phase2-runlog.md`).
+- [x] **E2E cheat path on Sepolia** — cheater FAIL → full stake slashed, 10% bounty to challenger,
+      buyer refunded, `Slashed` event — with real tx hashes recorded (`phase2-runlog.md`).
+- [x] x402 buyer rail implemented behind `PAYMENT_RAIL`/`rail` flag (live-run deferred; documented).
 - [ ] TODO.md Phase-2 boxes checked; payment-rail split + the x402-no-refund nuance noted in the
       honesty table (per CLAUDE.md).
 

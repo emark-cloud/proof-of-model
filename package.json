@@ -17,10 +17,21 @@
     "contracts:build": "forge build --root packages/contracts",
     "contracts:test": "forge test --root packages/contracts",
     "stylus:check": "cargo stylus check --manifest-path packages/stylus/Cargo.toml",
-    "abis:sync": "tsx scripts/sync-abis.ts"
+    "abis:sync": "tsx scripts/sync-abis.ts",
+    "typecheck:scripts": "tsc -p scripts/tsconfig.json",
+    "fund": "tsx scripts/fund.ts",
+    "fund-check": "tsx scripts/fund-check.ts",
+    "seed": "tsx scripts/seed.ts",
+    "e2e:happy": "tsx scripts/e2e-happy.ts",
+    "e2e:cheat": "tsx scripts/e2e-cheat.ts"
   },
   "devDependencies": {
+    "@proof/agents": "workspace:*",
+    "@proof/model": "workspace:*",
+    "@proof/shared": "workspace:*",
+    "@types/node": "^20.17.0",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "viem": "^2.21.0"
   }
 }
