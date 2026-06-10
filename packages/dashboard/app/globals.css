@@ -1,5 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Design tokens — single source of truth for the palette (design.md §2).
+ * tailwind.config.ts references these via var(). Dark-only (CLAUDE.md invariant).
+ */
 :root {
   color-scheme: dark;
+
+  /* Background */
+  --bg-primary: #0a0a0f; /* near-black with slight blue */
+  --bg-surface: #12121a; /* card/panel backgrounds */
+  --bg-elevated: #1a1a26; /* hover states, active panels */
+
+  /* Borders & lines */
+  --border-default: #1e1e2e; /* subtle panel separators */
+  --border-accent: #2a2a3c; /* emphasized borders */
+
+  /* Text */
+  --text-primary: #e0e0e8; /* main text, high contrast */
+  --text-secondary: #6b6b80; /* labels, timestamps, muted */
+  --text-dim: #3a3a4e; /* decorative, background text */
+
+  /* Semantic colors */
+  --green-pass: #00ff88; /* PASS events, honest provider, success */
+  --green-dim: #00ff8820; /* green glow/background tint */
+  --red-slash: #ff3366; /* SLASH events, cheater, failure */
+  --red-dim: #ff336620; /* red glow/background tint */
+  --amber-pending: #ffb020; /* pending/in-progress states */
+  --cyan-accent: #00d4ff; /* links, interactive, buyer */
+  --purple-protocol: #8b5cf6; /* protocol fees, system-level */
 }
 
 * {
@@ -10,10 +41,41 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: #0a0a0b;
-  color: #ededed;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-mono), ui-monospace, monospace;
 }
 
 a {
-  color: #6ea8fe;
+  color: var(--cyan-accent);
+  text-decoration: none;
+}
+
+@layer utilities {
+  /*
+   * Subtle scanline overlay — a very low-opacity repeating gradient laid over
+   * the page background (design.md §2 effects). Apply `.scanlines` to a
+   * full-bleed fixed layer.
+   */
+  .scanlines::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.015) 0px,
+      rgba(255, 255, 255, 0.015) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  }
+
+  /* Blinking underscore cursor for the logo / live-feed title (design.md §4.1). */
+  .cursor-blink::after {
+    content: "_";
+    animation: blink 1s step-end infinite;
+    color: var(--green-pass);
+  }
 }

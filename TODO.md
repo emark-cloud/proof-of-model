@@ -39,7 +39,7 @@ Status legend: [ ] todo · [~] in progress · [x] done · [!] blocked
 - [x] E2E cheat path on Sepolia (cheater FAIL → slash + bounty + refund) with real tx hashes — `phase2-runlog.md`
 
 ## Phase 3 — Dashboard + deliverables + migrate
-- [ ] dashboard: scaffold (Next.js 14, wagmi/viem, RainbowKit, Tailwind, Framer Motion, design tokens)
+- [x] dashboard: scaffold (Next.js 14, wagmi/viem, RainbowKit, Tailwind, Framer Motion, design tokens) — deps + Tailwind tokens (design.md §2) + `app/providers.tsx` (Wagmi/RainbowKit/QueryClient, `NEXT_PUBLIC_CHAIN`-driven) + `lib/{chain,contracts}.ts` (typed handles from @proof/shared) + next/font; `typecheck` + `next build` green
 - [ ] dashboard: header + protocol stats bar (live aggregates)
 - [ ] dashboard: live event feed (SLASH red glow, PASS green pulse, tx links to Arbiscan)
 - [ ] dashboard: provider cards (both same H_w; one thrives, one slashed)
