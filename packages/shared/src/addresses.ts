@@ -54,3 +54,15 @@ export const ADDRESSES: Record<ChainKey, Deployment> = {
   },
   arbitrumOne: { ...EMPTY },
 };
+
+/**
+ * Deploy block per chain — the `fromBlock` anchor for the dashboard's historical
+ * backfill (getLogs from here, not genesis: the public RPC can't sweep the full
+ * chain). Sepolia: the Phase-2 Registry deploy (broadcast run-latest, block
+ * 275521029); a small margin is shaved off so no early log is missed. Null until
+ * the chain is deployed (Arbitrum One pre-migrate).
+ */
+export const DEPLOY_BLOCK: Record<ChainKey, bigint | null> = {
+  arbitrumSepolia: 275521000n,
+  arbitrumOne: null,
+};

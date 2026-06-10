@@ -9,13 +9,21 @@
  * Pure presentation: takes the merged FeedEvent[] (newest-first is handled here by
  * sorting on blockNumber). §2.3 supplies the live + backfilled stream.
  */
+import type { ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { explorerTx } from "@/lib/chain";
 import { FEED_META } from "@/lib/feed-meta";
 import { formatClock, truncateHex } from "@/lib/format";
 import type { FeedEvent } from "@/lib/types";
 
-export function EventFeed({ events }: { events: FeedEvent[] }) {
+export function EventFeed({
+  events,
+  status,
+}: {
+  events: FeedEvent[];
+  /** Right-aligned header slot (connection indicator); defaults to event count. */
+  status?: ReactNode;
+}) {
   // Newest first. Stable: blockNumber desc, then id desc for same-block ordering.
   const ordered = [...events].sort((a, b) => {
     if (a.blockNumber !== b.blockNumber)
@@ -30,7 +38,7 @@ export function EventFeed({ events }: { events: FeedEvent[] }) {
           Live Event Feed<span className="cursor-blink" />
         </h2>
         <span className="font-mono text-xs text-text-secondary">
-          {ordered.length} events
+          {status ?? `${ordered.length} events`}
         </span>
       </div>
 

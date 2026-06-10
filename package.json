@@ -23,7 +23,8 @@
     "fund-check": "tsx scripts/fund-check.ts",
     "seed": "tsx scripts/seed.ts",
     "e2e:happy": "tsx scripts/e2e-happy.ts",
-    "e2e:cheat": "tsx scripts/e2e-cheat.ts"
+    "e2e:cheat": "tsx scripts/e2e-cheat.ts",
+    "demo:driver": "tsx scripts/demo-driver.ts"
   },
   "devDependencies": {
     "@proof/agents": "workspace:*",

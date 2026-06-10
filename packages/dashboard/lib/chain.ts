@@ -11,7 +11,13 @@
 // viem names Arbitrum One simply `arbitrum` (chain id 42161).
 import { arbitrumSepolia, arbitrum as arbitrumOne } from "viem/chains";
 import type { Chain } from "viem";
-import { CHAINS, ADDRESSES, type ChainKey, type Deployment } from "@proof/shared";
+import {
+  CHAINS,
+  ADDRESSES,
+  DEPLOY_BLOCK,
+  type ChainKey,
+  type Deployment,
+} from "@proof/shared";
 
 function resolveChainKey(): ChainKey {
   const raw = process.env.NEXT_PUBLIC_CHAIN;
@@ -31,6 +37,9 @@ export const chainMeta = CHAINS[CHAIN_KEY];
 
 /** Deployed addresses for the active chain (null entries until that chain is deployed). */
 export const addresses: Deployment = ADDRESSES[CHAIN_KEY];
+
+/** Backfill anchor block for the active chain (null until deployed). */
+export const deployBlock: bigint | null = DEPLOY_BLOCK[CHAIN_KEY];
 
 /** Default public RPC per chain; overridable via NEXT_PUBLIC_RPC_URL (read-only). */
 const DEFAULT_RPC: Record<ChainKey, string> = {
