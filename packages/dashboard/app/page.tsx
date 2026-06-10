@@ -1,55 +1,35 @@
-import { LAYER_SIZES, MAX_WIDTH } from "@proof/shared";
-import { chainMeta, CHAIN_KEY } from "@/lib/chain";
-import { isDeployed } from "@/lib/contracts";
+import { Header } from "@/components/Header";
+import { StatsBar } from "@/components/StatsBar";
+import { EventFeed } from "@/components/EventFeed";
+import { ProviderCards } from "@/components/ProviderCards";
+import { DEMO_EVENTS, DEMO_STATS, DEMO_PROVIDERS } from "@/lib/demo-data";
 
-// Read-only spectator mode (CLAUDE.md invariant): NO user actions beyond an
-// optional wallet connect. This is the Phase-3 §2.1 scaffold landing — the web3
-// stack (wagmi/viem/RainbowKit/Tailwind/Framer + design tokens) is wired; the
-// live event feed, provider cards, and stats bar land in §2.2/§2.3.
+/**
+ * Read-only spectator dashboard (CLAUDE.md invariant): NO user actions beyond an
+ * optional wallet connect. Three-zone single-page layout (design.md §3): header,
+ * protocol stats bar, then feed (≈60%) beside provider cards (≈40%).
+ *
+ * Phase-3 §2.2 — the components are wired to the PLACEHOLDER seed (lib/demo-data.ts,
+ * the real Phase-2 Sepolia history). §2.3 swaps the seed for the live data layer
+ * (watchContractEvent + backfill + Registry reads) without touching a component.
+ */
 export default function Home() {
   return (
-    <main className="mx-auto max-w-3xl px-8 py-16 font-mono">
-      <h1 className="font-display text-xl font-bold tracking-tight">
-        <span className="text-text-primary">PROOF-OF-MODEL</span>
-        <span className="cursor-blink text-green-pass" />
-      </h1>
+    <div className="flex h-screen flex-col">
+      <Header />
+      <StatsBar stats={DEMO_STATS} />
 
-      <p className="mt-4 text-base leading-relaxed text-text-primary">
-        Verifiable-inference marketplace for the agent economy on Arbitrum.
-        Providers commit to <em>which model they ran</em>; challengers spot-check a
-        random output→input path and slash provable cheats.
-      </p>
+      <main className="grid min-h-0 flex-1 grid-cols-1 gap-4 p-4 lg:grid-cols-[3fr_2fr]">
+        {/* Live event feed — the hero (≈60%) */}
+        <div className="min-h-0">
+          <EventFeed events={DEMO_EVENTS} />
+        </div>
 
-      <p className="mt-3 text-sm text-text-secondary">
-        Spectator dashboard — Phase-3 §2.1 web3 scaffold. Live feed, provider
-        cards, and stats bar arrive next (§2.2/§2.3).
-      </p>
-
-      <dl className="mt-8 grid grid-cols-[max-content_1fr] gap-x-6 gap-y-2 text-sm">
-        <dt className="text-text-secondary">Network</dt>
-        <dd className="text-text-primary">
-          {LAYER_SIZES.join(" → ")} &nbsp;(max width N = {MAX_WIDTH})
-        </dd>
-
-        <dt className="text-text-secondary">Chain</dt>
-        <dd className="text-text-primary">
-          <span className="mr-2 inline-block h-2 w-2 rounded-full bg-green-pass align-middle shadow-glow-green" />
-          {chainMeta.name}
-          <span className="ml-2 text-text-dim">({CHAIN_KEY})</span>
-        </dd>
-
-        <dt className="text-text-secondary">Contracts</dt>
-        <dd className={isDeployed ? "text-green-pass" : "text-amber-pending"}>
-          {isDeployed ? "deployed ✓" : "not deployed on this chain yet"}
-        </dd>
-
-        <dt className="text-text-secondary">Explorer</dt>
-        <dd>
-          <a href={chainMeta.explorer} target="_blank" rel="noreferrer">
-            {chainMeta.explorer}
-          </a>
-        </dd>
-      </dl>
-    </main>
+        {/* Provider cards — the side-by-side narrative (≈40%) */}
+        <aside className="min-h-0 overflow-y-auto">
+          <ProviderCards providers={DEMO_PROVIDERS} />
+        </aside>
+      </main>
+    </div>
   );
 }

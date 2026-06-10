@@ -1,0 +1,33 @@
+"use client";
+
+/**
+ * Header bar — design.md §4.1. Monospace wordmark + blinking underscore, a network
+ * badge (green dot + active chain from lib/chain.ts), and the RainbowKit connect
+ * button kept deliberately muted (not the hero; connect enables nothing in the
+ * read-only MVP — phase3-plan §2.1.3).
+ */
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { chainMeta } from "@/lib/chain";
+
+export function Header() {
+  return (
+    <header className="flex items-center justify-between border-b border-border-default px-6 py-4">
+      <h1 className="font-mono text-lg font-bold tracking-tight text-text-primary">
+        PROOF-OF-MODEL<span className="cursor-blink" />
+      </h1>
+
+      <div className="flex items-center gap-5">
+        <span className="flex items-center gap-2 font-mono text-sm text-text-secondary">
+          <span className="inline-block h-2 w-2 rounded-full bg-green-pass shadow-glow-green" />
+          {chainMeta.name}
+        </span>
+        {/* Muted, compact — legitimacy signaling only (design.md §5). */}
+        <ConnectButton
+          showBalance={false}
+          accountStatus="address"
+          chainStatus="none"
+        />
+      </div>
+    </header>
+  );
+}

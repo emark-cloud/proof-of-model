@@ -40,10 +40,10 @@ Status legend: [ ] todo · [~] in progress · [x] done · [!] blocked
 
 ## Phase 3 — Dashboard + deliverables + migrate
 - [x] dashboard: scaffold (Next.js 14, wagmi/viem, RainbowKit, Tailwind, Framer Motion, design tokens) — deps + Tailwind tokens (design.md §2) + `app/providers.tsx` (Wagmi/RainbowKit/QueryClient, `NEXT_PUBLIC_CHAIN`-driven) + `lib/{chain,contracts}.ts` (typed handles from @proof/shared) + next/font; `typecheck` + `next build` green
-- [ ] dashboard: header + protocol stats bar (live aggregates)
-- [ ] dashboard: live event feed (SLASH red glow, PASS green pulse, tx links to Arbiscan)
-- [ ] dashboard: provider cards (both same H_w; one thrives, one slashed)
-- [ ] dashboard: wire watchContractEvent + poll fallback; deploy to Vercel
+- [x] dashboard: header + protocol stats bar — `components/{Header,StatsBar,CountUp}.tsx`, design.md §4.1/§4.2 (network badge from `lib/chain`, muted RainbowKit connect, Framer count-up). Data via typed props (`lib/types.ts` = the §2.2↔§2.3 seam); fed the placeholder seed for now, §2.3 swaps in live aggregates
+- [x] dashboard: live event feed (SLASH red glow, PASS green pulse, tx links to Arbiscan) — `components/EventFeed.tsx` + `lib/feed-meta.ts` (§1.1 on-chain-event mapping), reverse-chron rows, Framer slide-in, Arbiscan tx links
+- [x] dashboard: provider cards (both same H_w; one thrives, one slashed) — `components/ProviderCards.tsx`, derived reputation bar (`lib/reputation.ts`, §1.3), ACTIVE/SLASHED pulsing badge, shared `H_w` on both. Seed = real Phase-2 runlog counters (`lib/demo-data.ts`); `typecheck` + `next build` + static prerender green
+- [ ] dashboard: wire watchContractEvent + poll fallback; deploy to Vercel (§2.3 — replace the `lib/demo-data.ts` seed with live reads behind the same `lib/types.ts` props)
 - [ ] scripts/verify.ts: one-command judge path (bytecode + slashed state + SLASHED event + bounty → PASS)
 - [ ] scripts/benchmark: Stylus-vs-Solidity gas table for verify (reproducible)
 - [ ] docs: honesty-table, category-rejection paragraph, README, demo script
