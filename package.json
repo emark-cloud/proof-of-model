@@ -24,7 +24,8 @@
     "seed": "tsx scripts/seed.ts",
     "e2e:happy": "tsx scripts/e2e-happy.ts",
     "e2e:cheat": "tsx scripts/e2e-cheat.ts",
-    "demo:driver": "tsx scripts/demo-driver.ts"
+    "demo:driver": "tsx scripts/demo-driver.ts",
+    "verify": "tsx scripts/verify.ts"
   },
   "devDependencies": {
     "@proof/agents": "workspace:*",
