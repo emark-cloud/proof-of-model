@@ -343,7 +343,7 @@ the critical path** (deferred to Phase-3 migrate).
 - [x] **E2E cheat path on Sepolia** — cheater FAIL → full stake slashed, 10% bounty to challenger,
       buyer refunded, `Slashed` event — with real tx hashes recorded (`phase2-runlog.md`).
 - [x] x402 buyer rail implemented behind `PAYMENT_RAIL`/`rail` flag (live-run deferred; documented).
-- [ ] TODO.md Phase-2 boxes checked; payment-rail split + the x402-no-refund nuance noted in the
+- [x] TODO.md Phase-2 boxes checked; payment-rail split + the x402-no-refund nuance noted in the
       honesty table (per CLAUDE.md).
 
 ---

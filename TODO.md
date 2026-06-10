@@ -28,14 +28,15 @@ Status legend: [ ] todo · [~] in progress · [x] done · [!] blocked
 - [x] contracts: deploy skeleton to Sepolia (Registry 0x94B1…Ec9, ChallengeManager 0x514C…f30, Escrow 0x4304…3DC)
 
 ## Phase 2 — Agents + money loop + challenge game
-- [ ] agents/provider: serve inference, commit R + output on-chain, serve openings
-- [ ] agents/provider: cheat-mode flag (corrupt one neuron on command)
-- [ ] agents/buyer: x402 per-inference payment → on-chain receipt
-- [ ] contracts: Escrow/Fee (per-request receipt + protocol cut)
-- [ ] contracts: ChallengeManager (finalize window; challenge → call Verifier → slash + bounty)
-- [ ] agents/challenger: sample → demand opening → call Verifier → submit challenge → earn bounty
-- [ ] E2E happy path on Sepolia (honest provider PASS, fee released) with real tx hashes
-- [ ] E2E cheat path on Sepolia (cheater FAIL → slash + bounty) with real tx hashes
+- [x] agents/provider: serve inference, commit R + output on-chain, serve openings
+- [x] agents/provider: cheat-mode flag (corrupt one neuron on command)
+- [x] agents/buyer: per-inference payment → on-chain receipt — escrow rail (Sepolia spine);
+      x402 wired behind `rail=x402|escrow` flag, live-run deferred to Phase-3 One migrate
+- [x] contracts: Escrow/Fee (per-request receipt + protocol cut, 5%; refund-on-slash)
+- [x] contracts: ChallengeManager (finalize window 30s; challenge → call Verifier → slash + bounty)
+- [x] agents/challenger: sample → demand opening → call Verifier → submit challenge → earn bounty
+- [x] E2E happy path on Sepolia (honest provider PASS, fee released) with real tx hashes — `phase2-runlog.md`
+- [x] E2E cheat path on Sepolia (cheater FAIL → slash + bounty + refund) with real tx hashes — `phase2-runlog.md`
 
 ## Phase 3 — Dashboard + deliverables + migrate
 - [ ] dashboard: scaffold (Next.js 14, wagmi/viem, RainbowKit, Tailwind, Framer Motion, design tokens)

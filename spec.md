@@ -131,6 +131,15 @@ The verifier's work — Merkle path hashing + a fixed-point dot product per neur
 - Large challenger swarm → 1–2 challengers.
 - Hardened x402 facilitator + economic parameter tuning → minimal/testnet for MVP.
 
+**Payment-rail split + the x402 no-fee-refund nuance (state plainly):** the Phase-2 E2E
+spine runs on the **escrow rail** (Arbitrum Sepolia) — the escrow holds the fee, releases to
+the provider on finalize (minus the 5% protocol cut), and **refunds the buyer on a proven
+slash**. **x402** stays the headline buyer→provider rail but is **wired-behind-a-flag**
+(`rail=x402|escrow`), with the live run deferred to the Phase-3 Arbitrum One migrate (CDP has
+no Sepolia support). Note the asymmetry: x402 **direct-settles USDC to the provider**, so it
+has **no fee-refund-on-slash** — under x402 the deterrent is purely the **stake slash + bounty**
+(which works on either rail), not the fee clawback. The escrow rail adds the buyer refund on top.
+
 ---
 
 ## 9. Three-week milestones
