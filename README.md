@@ -120,7 +120,7 @@ optional cosmetic wallet connect, no user actions.
 
 ---
 
-## Honesty table — what's real, what's roadmap
+## What's live, what's roadmap
 
 The MVP proves the verification *primitive* and the economic game, end-to-end and on-chain. It is
 deliberately narrow; we state the scope plainly (the StarkVerifier lesson: ship the honest result,
@@ -138,7 +138,7 @@ not a fictional multiplier).
 
 ---
 
-## Category-rejection & ecosystem benefit
+## Ecosystem benefit
 
 **This is not zkML and not a decentralized-compute marketplace.** We don't re-execute or zk-prove
 the whole model, and we don't sell compute. We **commit the trace, spot-check random openings, and
@@ -152,10 +152,4 @@ paid inference — useful to the whole agent-payments ecosystem, not just Arbitr
 
 ---
 
-## Docs
 
-- `spec.md` — full project scope & MVP.
-- `design.md` — spectator dashboard design.
-- `DEMO.md` — the 3-minute recording script (one mechanic per sentence).
-- `resources.md` — links, faucets, RPC.
-- `CLAUDE.md` — locked decisions & invariants.
