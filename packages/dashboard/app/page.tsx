@@ -77,29 +77,6 @@ const ROLES = [
   },
 ];
 
-/** Condensed honesty table — what's live vs. roadmap (README single source). */
-const HONESTY = [
-  {
-    aspect: "Model",
-    shipped: "Deterministic 3→8→4→2 fixed-point net. Determinism is required for the exact-equality recompute — a scope choice, not a weakness.",
-    roadmap: "Real / non-deterministic LLMs via tolerance-band commitments.",
-  },
-  {
-    aspect: "Verification",
-    shipped:
-      "Single-round, multi-sample: K independent random output→input paths. Per-path detection of a one-node cheat is ~1/N; K paths raise it.",
-    roadmap:
-      "Interactive multi-round bisection (a refereed-game model) — O(log N) rounds to localize the first disputed node.",
-  },
-  {
-    aspect: "Payment rail",
-    shipped:
-      "Escrow on Sepolia is the demonstrated money spine: holds the fee, releases on finalize minus a 5% cut, refunds the buyer on a proven slash.",
-    roadmap:
-      "x402 buyer→provider USDC, end-to-end on Arbitrum One (CDP has no Sepolia support). Proven in a Phase-0 spike; the migrate is a single-env flip.",
-  },
-];
-
 const ADDRESS_ROWS: { label: string; addr: `0x${string}` | null }[] = [
   { label: "Verifier (Stylus)", addr: addresses.Verifier },
   { label: "Registry + Staking", addr: addresses.Registry },
@@ -231,61 +208,6 @@ export default function Landing() {
               </Card>
             ))}
           </div>
-          <div className="mt-6 rounded border border-border-default bg-bg-primary px-5 py-4 font-mono text-sm leading-relaxed text-text-secondary">
-            <div className="mb-2 text-xs uppercase tracking-wide text-text-dim">
-              the loop, against the live Sepolia deploy
-            </div>
-            <CmdLine cmd="pnpm seed" note="register + stake both providers" />
-            <CmdLine
-              cmd="pnpm e2e:happy"
-              note="pay → commit R → challenge → PASS → fee released"
-            />
-            <CmdLine
-              cmd="pnpm e2e:cheat"
-              note="bad R → challenge → FAIL → slash + bounty"
-            />
-            <CmdLine
-              cmd="pnpm verify"
-              note="one-command judge path: asserts the on-chain slashed state, prints PASS"
-            />
-          </div>
-        </Section>
-
-        {/* ── Honesty table ────────────────────────────────────────────── */}
-        <Section
-          kicker="What's real"
-          title="Shipped vs. roadmap"
-        >
-          <p className="mb-5 font-mono text-sm leading-relaxed text-text-secondary">
-            The MVP proves the verification primitive and the economic game,
-            end-to-end and on-chain. It is deliberately narrow — and we state the
-            scope plainly rather than invent a headline number.
-          </p>
-          <div className="overflow-hidden rounded border border-border-default">
-            <div className="hidden grid-cols-[1fr_2fr_2fr] gap-px bg-border-default font-mono text-xs uppercase tracking-wide text-text-secondary md:grid">
-              <Th>Aspect</Th>
-              <Th tone="text-green-pass">Shipped (Sepolia)</Th>
-              <Th tone="text-amber-pending">Roadmap</Th>
-            </div>
-            {HONESTY.map((row) => (
-              <div
-                key={row.aspect}
-                className="grid grid-cols-1 gap-px border-t border-border-default bg-border-default md:grid-cols-[1fr_2fr_2fr] md:border-t-0"
-              >
-                <div className="bg-bg-surface px-4 py-3 font-mono text-sm font-bold text-text-primary">
-                  {row.aspect}
-                </div>
-                <div className="bg-bg-surface px-4 py-3 font-mono text-sm leading-relaxed text-text-secondary">
-                  <span className="text-green-pass md:hidden">shipped · </span>
-                  {row.shipped}
-                </div>
-                <div className="bg-bg-surface px-4 py-3 font-mono text-sm leading-relaxed text-text-secondary">
-                  <span className="text-amber-pending md:hidden">roadmap · </span>
-                  {row.roadmap}
-                </div>
-              </div>
-            ))}
-          </div>
         </Section>
 
         {/* ── Addresses ────────────────────────────────────────────────── */}
@@ -389,22 +311,3 @@ function Mono({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Th({ tone, children }: { tone?: string; children: React.ReactNode }) {
-  return (
-    <div className={`bg-bg-elevated px-4 py-2.5 ${tone ?? "text-text-secondary"}`}>
-      {children}
-    </div>
-  );
-}
-
-function CmdLine({ cmd, note }: { cmd: string; note: string }) {
-  return (
-    <div className="flex flex-wrap items-baseline gap-x-3">
-      <span className="text-green-pass">
-        <span className="text-text-dim">$ </span>
-        {cmd}
-      </span>
-      <span className="text-xs text-text-secondary">{note}</span>
-    </div>
-  );
-}
