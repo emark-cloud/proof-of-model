@@ -358,9 +358,10 @@ ends so it isn't a day-21 surprise. `verify.ts` + docs are low-risk and fill par
 - [x] ~~**Benchmark** — Stylus-vs-Solidity `verifyPath` gas table.~~ **DROPPED (§2.5):** measured
       ~2.3% parity vs best-in-class `poseidon-solidity` — no honest gas-win to ship, so the
       benchmark is not a deliverable (CLAUDE.md: no manufactured wins). Raw numbers in §2.5.
-- [ ] **Docs** — honesty table (incl. x402 no-fee-refund + single-round multi-sample framing),
+- [x] **Docs** — honesty table (incl. x402 no-fee-refund + single-round multi-sample framing),
       category-rejection paragraph + ecosystem benefit, README (quickstart + addresses + URL),
-      demo script (one mechanic per sentence).
+      demo script (one mechanic per sentence). *(§2.6 — `README.md` + `DEMO.md`. README's Vercel
+      URL + Arbitrum One addresses left as `pending`, filled at the §2.3 deploy / §2.7 migrate.)*
 - [ ] **Migrate** — Stylus + stack redeployed to Arbitrum One; `ADDRESSES.arbitrumOne` filled;
       dashboard flipped to One; one happy + one cheat E2E on One with real tx hashes; **x402
       live-run** settles a real USDC buyer→provider payment (CDP facilitator); `verify --chain
