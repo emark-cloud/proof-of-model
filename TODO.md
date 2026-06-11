@@ -48,7 +48,7 @@ Status legend: [ ] todo · [~] in progress · [x] done · [!] blocked
   - [x] `scripts/demo-driver.ts` (§2.3.5 / §1.2): continuous honest cadence + cheat-every-Nth → SLASH; `pnpm demo:driver`
   - [ ] Vercel deploy — prepared (`vercel.json` + `DEPLOY.md`: root dir, build builds `@proof/shared` first, envs); actual `vercel --prod` + public URL is the remaining manual step (needs your Vercel auth)
 - [ ] scripts/verify.ts: one-command judge path (bytecode + slashed state + SLASHED event + bounty → PASS)
-- [ ] scripts/benchmark: Stylus-vs-Solidity gas table for verify (reproducible)
+- [x] ~~scripts/benchmark: Stylus-vs-Solidity gas table for verify~~ **DROPPED** — built `VerifierSol.sol` (Poseidon via assembly-optimized `poseidon-solidity`, golden-vector + fixture parity), deployed + measured on Sepolia: Stylus 3.70M vs Solidity 3.78M = **~2% parity, no honest gas-win** → not a deliverable (CLAUDE.md: no manufactured wins). See `phase3-plan.md` §1.4/§2.5. Build reverted; testnet deploys orphaned (harmless).
 - [ ] docs: honesty-table, category-rejection paragraph, README, demo script
 - [ ] Migrate/redeploy to Arbitrum One
 - [ ] Record demo (one mechanic per sentence); buffer
@@ -56,4 +56,4 @@ Status legend: [ ] todo · [~] in progress · [x] done · [!] blocked
 ## Stretch (only after the spine works)
 - [ ] dashboard: event detail drawer (neuron coords, expected vs actual, Merkle path, gas badge)
 - [ ] dashboard: SLASH sound effect; auto-scroll pause-on-hover
-- [ ] Poseidon benchmark hardening
+- [x] ~~Poseidon benchmark hardening~~ — moot (benchmark dropped, see above)

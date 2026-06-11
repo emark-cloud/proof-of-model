@@ -4,17 +4,18 @@ Status: planning. Owner: —. Target: Week 3 (Days 12–21, per `spec.md` milest
 
 Phase 3 turns the working Phase-2 economic spine (the two reproducible Sepolia E2E runs —
 honest PASS, cheat SLASH) into the **demo-day surface**: a read-only spectator dashboard that
-renders the game live, a one-command judge path, the Stylus-vs-Solidity gas benchmark, the
-honesty docs, and the migrate to Arbitrum One (incl. the deferred x402 live-run).
+renders the game live, a one-command judge path, the honesty docs, and the migrate to Arbitrum
+One (incl. the deferred x402 live-run). *(The Stylus-vs-Solidity gas benchmark was scoped here
+too but is now **dropped** — built, measured at ~2% parity, no honest gas-win; see §1.4/§2.5.)*
 
 Nothing in Phase 3 changes protocol semantics. The contracts, the Stylus Verifier, the TS
 reference model, and the agents are **finished inputs**; Phase 3 *observes* them (events +
-reads) and *packages* them (docs, judge path, benchmark, mainnet deploy). The one genuinely new
-build is the **dashboard** (`packages/dashboard`), today a static Phase-0.5 landing page.
+reads) and *packages* them (docs, judge path, mainnet deploy). The one genuinely new build is the
+**dashboard** (`packages/dashboard`), today a static Phase-0.5 landing page.
 
 The phase ends with a **public Vercel URL** showing live green/red outcomes, a `verify.ts`
-that prints **PASS** in ~60s, an honest gas table, and the system **redeployed to Arbitrum One**
-with x402 settling a real buyer→provider payment.
+that prints **PASS** in ~60s, and the system **redeployed to Arbitrum One** with x402 settling a
+real buyer→provider payment.
 
 ---
 
@@ -117,29 +118,28 @@ the counters). The cards show stake (live), the three counters, `H_w`, and a sta
 (ACTIVE green / SLASHED red, pulsing). The narrative is the **side-by-side**: honest climbs,
 cheat gets wiped (stake → 0 after full-stake slash).
 
-### 1.4 Benchmark methodology — honest, on-chain, reproducible (the StarkVerifier 2.1× lesson)
+### 1.4 ~~Benchmark methodology~~ — **resolved by measurement: DROPPED (the StarkVerifier 2.1× lesson, for real)**
 
-The deliverable is a **Solidity-vs-Stylus gas table for `verifyPath`**. Since `cargo` is absent:
+We executed option 1 (build the real Solidity verifier) to get a true apples-to-apples table, and
+the honest measurement killed the deliverable:
 
-- **Stylus side**: measure the **deployed** verifier (`0xe19d…79ae`) — `eth_estimateGas` (or a
-  receipt from a thin state-changing wrapper) on `verifyPath(traceRoot, weightRoot, pathProof)`
-  with the **golden good + bad `pathProof` hex** from `fixtures.json`. Real numbers, on Sepolia.
-- **Solidity side**: a **reference Solidity `verifyPath`** is needed to compare. This is real
-  work — it requires Poseidon-in-Solidity (the StarkVerifier reference / a Poseidon-sol lib) +
-  the fixed-point recompute mirrored from `packages/shared`. Two honest options:
-  1. **Build it** (`packages/contracts/src/VerifierSol.sol`) — strongest deliverable; the table
-     is a true apples-to-apples on identical inputs. Costed as its own task (§2.5) — **the
-     benchmark's critical path**, because the Stylus number alone isn't a comparison.
-  2. **If time-boxed out**: cite the StarkVerifier published 2.1× on comparable Poseidon/Merkle
-     math and present **only the measured Stylus number** as our half, labelled clearly as
-     "Solidity comparison from StarkVerifier, not re-measured here." Honest, weaker. Decide early.
-- Output: a reproducible `scripts/benchmark.ts` that prints the table + a committed
-  `benchmark.md`. **No invented multiplier** — ship the measured result (CLAUDE.md honesty
-  invariant), exactly the StarkVerifier "ship the real 2.1×" lesson.
+- **Stylus side**: measured the **deployed** verifier (`0xe19d…79ae`) via `eth_estimateGas` on
+  `verifyPath` with the golden good + bad `pathProof` hex → **3,698,400 gas** (good), 30,937/hash.
+- **Solidity side**: built `VerifierSol.sol` (a faithful twin — same wire format, position-bound
+  Poseidon-Merkle openings, Q47.16 recompute) with Poseidon via the **assembly-optimized
+  `poseidon-solidity`** (vimwitch v0.0.5, 3/3 golden vectors), `forge`-tested to good→PASS /
+  bad→FAIL parity on the **same golden fixtures**, deployed to Sepolia (`0xFEa6…66FB`) →
+  **3,784,097 gas** (good), 31,669/hash.
 
-> Recommendation: attempt option 1 (real Solidity verifier) since the gas table is a scored
-> "smart-contract quality + innovation" deliverable; fall back to option 2 only if the
-> Poseidon-sol port over-runs. Confirm this scoping if the timeline is tight.
+**Result: ~2.3% — parity, not 2.1×.** A single fixed Poseidon permutation is already beaten flat
+into optimal EVM assembly, so Stylus's typical edge doesn't appear and per-hash cost is dead even;
+multi-sample doesn't change the ratio. The StarkVerifier 2.1× does not reproduce against a
+best-in-class Solidity Poseidon.
+
+> **Decision (chosen): drop the benchmark deliverable.** No honest gas-win exists to ship, and the
+> CLAUDE.md invariant forbids manufacturing one (no naive-Solidity strawman, no cited-but-not-measured
+> multiplier presented as ours). The build is reverted; testnet deploys are left orphaned (harmless).
+> This *is* the "ship the honest result" lesson — sometimes the honest result is "no result." See §2.5.
 
 ### 1.5 Migrate to Arbitrum One — order of operations + what x402 unlocks
 
@@ -175,7 +175,8 @@ product's verifier *and* the judge's fast path.
 
 Ordered by dependency. The dashboard (2.1–2.3) is the long pole and can start immediately
 against the **existing Sepolia deploy**. `verify.ts` (2.4) and docs (2.6) parallelize. The
-benchmark (2.5) and migrate (2.7) are the riskier tail (Solidity-Poseidon + cargo/mainnet).
+migrate (2.7) is the riskier tail (cargo/mainnet). *(The benchmark (2.5) is dropped — built and
+measured at ~2% parity, no honest gas-win.)*
 
 ### 2.1 `packages/dashboard` — scaffold the web3 stack (do first; everything renders through it)
 
@@ -237,20 +238,36 @@ benchmark (2.5) and migrate (2.7) are the riskier tail (Solidity-Poseidon + carg
 3. Reuse `_onchain.ts`/`_env.ts` helpers; consumes the addresses + tx hashes the E2E scripts
    already produce. Add to root `package.json` as `pnpm verify`.
 
-### 2.5 `scripts/benchmark.ts` + `benchmark.md` — the gas table (§1.4)
+### 2.5 ~~`scripts/benchmark.ts` + `benchmark.md` — the gas table~~ — **DROPPED (honest result)**
 
-1. **Stylus measurement**: `eth_estimateGas` (and/or a thin wrapper receipt) on the deployed
-   `verifyPath` with the golden good + bad `pathProof` hex. Record real Sepolia gas.
-2. **Solidity reference verifier** (option 1, recommended): `packages/contracts/src/VerifierSol.sol`
-   — Poseidon-sol (StarkVerifier reference / audited lib) + the fixed-point recompute mirrored
-   **exactly** from `packages/shared` (the cross-language invariant applies — assert against the
-   **same golden fixtures**). `forge test` it to PASS-good/FAIL-bad parity with the Stylus
-   verifier, deploy to Sepolia, measure its `verifyPath` gas on the identical inputs.
-   - **Fallback (option 2)**: skip the build; present the measured Stylus number + the cited
-     StarkVerifier 2.1× on comparable math, **clearly labelled as not re-measured**. Decide by
-     start of §2.5.
-3. `benchmark.ts` prints the comparison table; `benchmark.md` commits it with methodology +
-   the exact inputs + raw numbers (reproducible). **No invented multiplier.**
+**Status: descoped after measurement.** The Stylus-vs-Solidity gas comparison is **not** a
+Phase-3 deliverable. We built it, measured it, and the honest result does not support a Stylus
+gas-win claim — so per the CLAUDE.md honesty invariant (no manufactured wins) we pull it rather
+than spin it.
+
+What we did (all reverted; testnet deploys left orphaned, harmless):
+- Built `VerifierSol.sol` — a faithful Solidity twin of the Stylus `verifyPath` (same wire
+  format, position-bound Poseidon-Merkle openings, Q47.16 recompute), Poseidon via the
+  best-in-class **assembly-optimized `poseidon-solidity`** (vimwitch v0.0.5, 3/3 golden vectors).
+- `forge`-tested it to good→PASS / bad→FAIL parity with the Stylus verifier on the **same golden
+  fixtures**; deployed both to Sepolia.
+- Measured `verifyPath` via `eth_estimateGas` on identical calldata.
+
+The numbers (Arbitrum Sepolia, golden good fixture):
+
+| `verifyPath` | gas | per-hash (~117×) |
+|---|---|---|
+| Stylus (`0xe19d…79ae`)   | 3,698,400 | 30,937 |
+| Solidity (`0xFEa6…66FB`) | 3,784,097 | 31,669 |
+
+**~2.3% — parity, not 2.1×.** Reason: a single fixed Poseidon permutation is already beaten flat
+into optimal EVM assembly by `poseidon-solidity`, so Stylus's usual edge (loops/memory/EVM-awkward
+arithmetic) doesn't appear on this workload; per-hash cost is dead even. Multi-sample (K-path)
+doesn't change it — both scale linearly in hashes, so the gap stays ~2%. The StarkVerifier 2.1×
+was almost certainly vs. unoptimized Solidity or different math, and does not reproduce here.
+
+Decision: **drop the benchmark deliverable entirely** (this is the chosen option; the alternative
+was keeping it as a one-line honesty-table footnote). Time reallocates to dashboard/docs.
 
 ### 2.6 Docs — honesty-table, category-rejection, README, demo script
 
@@ -260,15 +277,17 @@ benchmark (2.5) and migrate (2.7) are the riskier tail (Solidity-Poseidon + carg
 2. **Honesty table**: consolidate the scattered honesty notes — deterministic toy model (not an
    LLM), single-round multi-sample (per-path ~1/N, K samples raise it; bisection is roadmap),
    1–2 challengers, payment-rail split (escrow refunds on slash; **x402 has no fee-refund**,
-   deterrent = stake slash + bounty), 30s demo window ≠ production economics, benchmark
-   methodology. Pull from `spec.md §8`, CLAUDE.md, `phase2-plan.md §1.3`.
+   deterrent = stake slash + bounty), 30s demo window ≠ production economics. Pull from `spec.md
+   §8`, CLAUDE.md, `phase2-plan.md §1.3`. *(The gas-benchmark line is dropped — we measured ~2%
+   parity and ship no gas-win claim; if mentioned at all, mention only as the honesty example.)*
 3. **Category-rejection paragraph** (`spec.md §11`): "not zkML, not a compute marketplace — we
    commit the trace + spot-check + slash, Arbitrum's optimistic fraud-proof paradigm for
    inference; the trust rail, not a compute provider." + ecosystem-benefit line (Arbitrum agent
    economy + x402/ERC-8004 trust layer).
 4. **Demo script**: one mechanic per sentence (the recording script) — land on dashboard →
    honest cadence (green) → cheat fires (red glow, stake→0, bounty) → provider cards diverge →
-   `pnpm verify` prints PASS → gas table. Map each beat to what's on screen.
+   `pnpm verify` prints PASS. Map each beat to what's on screen. *(No gas-table beat — benchmark
+   dropped.)*
 
 ### 2.7 Migrate / redeploy to Arbitrum One (§1.5)
 
@@ -304,7 +323,7 @@ dashboard components (2.2) ──┐
 dashboard wiring+deploy (2.3)┤  watchContractEvent + poll + backfill + Vercel + demo-driver
         │                    │
         ▼                    │   (parallel, independent of dashboard:)
-verify.ts (2.4) ─────────────┤   benchmark + VerifierSol (2.5)  ◀── benchmark's real critical path
+verify.ts (2.4) ─────────────┤   (2.5 benchmark DROPPED — measured ~2% parity, no honest win)
 docs (2.6) ──────────────────┘   (honesty table / README / category-rejection / demo script)
         │
         ▼
@@ -315,11 +334,11 @@ record demo + buffer (2.8)
 ```
 
 **Critical path = the dashboard (2.1→2.3)** — it's the only large net-new build and the demo's
-centerpiece; start it day 12 against the live Sepolia contracts. The **benchmark's Solidity
-verifier (2.5)** is the second risk (Poseidon-in-Solidity); decide build-vs-cite early. The
-**migrate (2.7)** is gated only on a funded mainnet wallet + the x402 prereqs (the Stylus deploy
-runs in-env) — line those up before Week 3 ends so it isn't a day-21 surprise. `verify.ts` + docs are low-risk and
-fill parallel capacity.
+centerpiece; start it day 12 against the live Sepolia contracts. (The §2.5 benchmark — once the
+"second risk" — is **dropped**: the Solidity verifier was built and measured, the result was ~2%
+parity, and there's no honest gas-win to ship.) The **migrate (2.7)** is gated only on a funded
+mainnet wallet + the x402 prereqs (the Stylus deploy runs in-env) — line those up before Week 3
+ends so it isn't a day-21 surprise. `verify.ts` + docs are low-risk and fill parallel capacity.
 
 ---
 
@@ -336,9 +355,9 @@ fill parallel capacity.
 - [ ] **`scripts/verify.ts`** — one command: bytecode ✓ + slashed state ✓ + `Slashed` event
       decoded + bounty paid ✓ → prints **PASS** (and non-zero exit on failure); `--chain
       sepolia|one`.
-- [ ] **Benchmark** — reproducible Stylus-vs-Solidity `verifyPath` gas table (`benchmark.ts` +
-      `benchmark.md`), real measured Stylus number on the golden fixtures; Solidity half either
-      measured (`VerifierSol.sol`, fixture-parity) or honestly cited — **no invented multiplier**.
+- [x] ~~**Benchmark** — Stylus-vs-Solidity `verifyPath` gas table.~~ **DROPPED (§2.5):** measured
+      ~2.3% parity vs best-in-class `poseidon-solidity` — no honest gas-win to ship, so the
+      benchmark is not a deliverable (CLAUDE.md: no manufactured wins). Raw numbers in §2.5.
 - [ ] **Docs** — honesty table (incl. x402 no-fee-refund + single-round multi-sample framing),
       category-rejection paragraph + ecosystem benefit, README (quickstart + addresses + URL),
       demo script (one mechanic per sentence).
@@ -356,10 +375,11 @@ fill parallel capacity.
   cargo-stylus are in-env and compile `packages/stylus` cleanly (§0), so the One Stylus deploy
   runs here directly. Residual risk is only a **funded mainnet deployer key** for the deploy tx —
   line that up with the rest of the migrate funding.
-- **Poseidon-in-Solidity (benchmark option 1) over-runs.** Mitigation: time-box it; fall back to
-  the measured Stylus number + cited StarkVerifier 2.1%, clearly labelled "not re-measured." The
-  cross-language invariant applies — assert `VerifierSol` against the **same golden fixtures** so
-  it can't silently diverge.
+- ~~**Poseidon-in-Solidity (benchmark option 1) over-runs.**~~ **Closed — benchmark dropped (§2.5).**
+  The Solidity verifier was built (Poseidon via assembly-optimized `poseidon-solidity`, golden-vector
+  + fixture parity) and measured: ~2% gas parity with Stylus, no honest win → the benchmark is not a
+  deliverable. The risk that materialised was not "over-run" but "honest result doesn't sell Stylus";
+  resolved by dropping it rather than manufacturing a multiplier.
 - **x402 mainnet live-run flakiness / wallet funding.** Mitigation (per CLAUDE.md): escrow on
   Sepolia is the proven spine and the dashboard's primary data source; x402 is the headline
   bundled into the migrate, with the Phase-0 prereqs (Proton WG tunnel, `PAY_TO != buyer`) already
@@ -371,10 +391,11 @@ fill parallel capacity.
 - **Read-only invariant slips** (someone adds a "Submit Challenge" button to make it interactive).
   Mitigation: hard rule (CLAUDE.md + design.md §9) — the dashboard is a window, not a tool; wallet
   connect enables nothing in MVP.
-- **Honesty (CLAUDE.md).** Ship the measured benchmark (StarkVerifier 2.1× lesson — no fictional
-  multiplier); state the x402 no-fee-refund nuance, single-round multi-sample bound, toy-model +
-  roadmap (LLMs, bisection) plainly in the honesty table; don't oversell the 30s window as
-  production economics.
+- **Honesty (CLAUDE.md).** The benchmark is the live example: we measured ~2% parity, found no
+  honest gas-win, and **dropped the deliverable rather than inventing a multiplier** (§2.5) — the
+  StarkVerifier 2.1× lesson applied for real. Likewise state the x402 no-fee-refund nuance,
+  single-round multi-sample bound, toy-model + roadmap (LLMs, bisection) plainly in the honesty
+  table; don't oversell the 30s window as production economics.
 
 ---
 
