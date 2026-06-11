@@ -292,7 +292,7 @@ Arbitrum Sepolia (contracts)
 ## 9. Anti-Patterns to Avoid
 
 - **Don't build a generic blockchain explorer.** This isn't Etherscan. Every element serves the verification narrative.
-- **Don't add user actions.** The human is a spectator. The moment you add a "Submit Challenge" button, you've broken the agentic story.
+- **Don't add *protocol* user actions.** The human is a spectator: no "Submit Challenge", no manual slash, no tx from the browser — that breaks the agentic story. *(One sanctioned exception, decision 2026-06-11: a **demo launcher** that starts/stops the off-chain agent driver — `DemoControl` + `/api/demo/*`. It kicks off the show and explains it; the agents still do every protocol step. It is not a protocol action.)*
 - **Don't show raw JSON or unformatted data.** Terminal aesthetic ≠ lazy formatting. Every number is labeled, every hash is truncated, every event is human-readable.
 - **Don't use light mode.** The dark terminal vibe is load-bearing for the aesthetic and the demo.
 - **Don't over-animate.** The SLASH glow is the one dramatic moment. Everything else is smooth and calm. If everything flashes, nothing flashes.

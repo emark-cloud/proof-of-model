@@ -59,8 +59,13 @@ sampled path — i.e. actually run the real model. That's the soundness.
   They live once in `packages/shared`. Divergence silently breaks every equality check.
 - Golden known-good / known-bad fixtures from `packages/model` are the contract for the verifier;
   assert them in every package's tests.
-- The dashboard is **read-only spectator mode** — no user actions beyond optional wallet connect.
-  Adding a "Submit Challenge" button breaks the agentic story.
+- The dashboard is **read-only re: the protocol** — a human cannot participate: no
+  "Submit Challenge", no manual slash, no tx-sending from the browser (that would break the
+  agentic story). **One deliberate exception (decision 2026-06-11):** a **demo launcher**
+  (`components/DemoControl.tsx` + `/api/demo/*`) that starts/stops the *off-chain agent driver*
+  so a visitor can kick off the show and understand it. It spawns `scripts/demo-driver.ts`
+  server-side (keys stay in the repo `.env`, never reach the client); the agents still do all
+  protocol work. The control is NOT a protocol action — keep it that way.
 - Be honest in all docs/demo: MVP = deterministic toy model + single-round check; LLMs and
   bisection are roadmap. Ship the honest result (the StarkVerifier 2.1× lesson).
 

@@ -1,10 +1,16 @@
 import { Header } from "@/components/Header";
+import { DemoControl } from "@/components/DemoControl";
 import { LiveDashboard } from "@/components/LiveDashboard";
 
 /**
- * Read-only spectator dashboard (CLAUDE.md invariant): NO user actions beyond an
- * optional wallet connect. Three-zone single-page layout (design.md §3): header,
- * then the live body (stats bar + feed beside provider cards).
+ * Spectator dashboard. Layout (design.md §3): header, a slim collapsible demo bar,
+ * then the live body (stats bar + feed beside provider cards). The demo bar is one row
+ * collapsed (title · status · ▶ RUN DEMO) and expands for the flow explainer + driver
+ * log, so it never crowds the feed.
+ *
+ * Read-only re: the PROTOCOL — no submit-challenge / manual-slash; a human cannot
+ * participate (CLAUDE.md / design.md §9). The one control (DemoControl) starts/stops
+ * the off-chain AGENT driver server-side; the agents still do all protocol work.
  *
  * Phase-3 §2.3 — the body (LiveDashboard) subscribes to chain via useProtocolData
  * (backfill + watchContractEvent + Registry reads), filling the §2.2 components with
@@ -14,6 +20,7 @@ export default function Home() {
   return (
     <div className="flex h-screen flex-col">
       <Header />
+      <DemoControl />
       <LiveDashboard />
     </div>
   );
