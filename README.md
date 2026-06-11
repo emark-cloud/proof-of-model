@@ -79,13 +79,16 @@ pnpm demo:driver           # continuous honest cadence + a cheat→slash every 4
 `pnpm verify` is the judge's 60-second no-video path: it connects to the chain, confirms the
 deployed Verifier + Registry bytecode, reads the cheat provider's slashed state, decodes the
 `Slashed`/`BountyPaid` events from the challenge receipt, and prints **PASS** with every tx link
-(non-zero exit on any failure). Use `--chain one` once the Arbitrum One deploy is live.
+(non-zero exit on any failure). It defaults to Sepolia; `--chain one` is wired for the roadmap
+Arbitrum One deploy (not live in the MVP — see the honesty table).
 
 ---
 
 ## Deployed addresses
 
-**Arbitrum Sepolia** (dev — Stylus verifier + contracts; explorer: [sepolia.arbiscan.io](https://sepolia.arbiscan.io))
+The MVP ships **live on Arbitrum Sepolia** — Stylus verifier + the full contract stack, with the
+honest-PASS and cheat-SLASH paths reproducible on-chain (explorer:
+[sepolia.arbiscan.io](https://sepolia.arbiscan.io)).
 
 | Contract | Address |
 |---|---|
@@ -94,11 +97,10 @@ deployed Verifier + Registry bytecode, reads the cheat provider's slashed state,
 | ChallengeManager | `0xc3135c7DbB5EcB87a4F99a538318d968079e96A3` |
 | Escrow / Fee | `0x6149f5fB00ec427727e67DD51E7278ED0Bf553cd` |
 
-**Arbitrum One** (x402 payment rail + final migration target — CDP has no Sepolia support)
-
-| Contract | Address |
-|---|---|
-| Verifier / Registry / ChallengeManager / Escrow | _pending the §2.7 migrate — filled into `packages/shared/src/addresses.ts`_ |
+**Arbitrum One** (roadmap) — the intended production home for the **x402 payment rail** (CDP has no
+Sepolia support, so x402 settles on One). Not deployed in the MVP; the migrate is a documented,
+single-env flip (`PROOF_CHAIN=one` / `NEXT_PUBLIC_CHAIN=arbitrumOne`) once a funded mainnet
+deployer is in place. `ADDRESSES.arbitrumOne` is `null` until then.
 
 Addresses are sourced from `packages/shared/src/addresses.ts` (single source of truth).
 
@@ -118,8 +120,8 @@ not a fictional multiplier).
 | **Model** | Deterministic `3→8→4→2` fixed-point net. Determinism is *required* for the exact-equality recompute — it's a scope choice, not a weakness. | Real / non-deterministic LLMs via tolerance-band commitments. |
 | **Verification** | Single-round, **multi-sample**: K independent random output→input paths. Per-path detection of a single-node cheat is bounded at `~1/N` (N = max layer width); K paths raise it. The demo is sized so the cheat is caught. | Interactive multi-round **bisection** (the paper's refereed model, App. D) — `O(log N)` rounds to localize the first disputed node. |
 | **Challengers** | 1–2 challenger agents. | Large challenger swarm + economic parameter tuning. |
-| **Payment rail** | **Escrow rail** is the on-chain money spine (Sepolia): holds the fee, releases to the provider on finalize minus a 5% protocol cut, and **refunds the buyer on a proven slash**. **x402** is the headline buyer→provider rail, wired behind a `PAYMENT_RAIL=x402\|escrow` flag; the live run is on Arbitrum One (CDP has no Sepolia support). | Hardened x402 facilitator. |
-| **x402 no-fee-refund nuance** | x402 *direct-settles* USDC to the provider, so it has **no fee-refund-on-slash** — under x402 the deterrent is purely the **stake slash + bounty** (which works on either rail), not the fee clawback. The escrow rail adds the buyer refund on top. | — |
+| **Payment rail** | The MVP's demonstrated money spine is the **escrow rail on Sepolia**: it holds the fee, releases to the provider on finalize minus a 5% protocol cut, and **refunds the buyer on a proven slash** — the honest-PASS and cheat-SLASH paths both run end-to-end on-chain. The **x402** buyer→provider rail is wired behind a `PAYMENT_RAIL=x402\|escrow` flag and was proven independently in a Phase-0 spike (live USDC settlement on Arbitrum One). | Running **x402 end-to-end integrated on Arbitrum One** (CDP has no Sepolia support) + a hardened x402 facilitator. The migrate is a single-env flip; it needs a funded mainnet deployer. |
+| **x402 no-fee-refund nuance** | When the x402 rail is used it *direct-settles* USDC to the provider, so it has **no fee-refund-on-slash** — there the deterrent is purely the **stake slash + bounty** (which works on either rail), not the fee clawback. The shipped escrow rail adds the buyer refund on top. | — |
 | **Demo economics** | A ~30s finalize window and tiny stakes make the cheat catchable on camera. | This is a demo window, **not** production economics. |
 | **Gas benchmark** | *Dropped.* A Stylus-vs-Solidity `verifyPath` gas table was built and measured at **~2% parity** — no honest gas-win, so we ship no benchmark claim rather than invent a multiplier. The Stylus value here is feasibility of the recompute on-chain, not a headline number. | — |
 

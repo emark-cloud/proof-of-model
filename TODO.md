@@ -47,10 +47,10 @@ Status legend: [ ] todo · [~] in progress · [x] done · [!] blocked
   - [x] live data layer — `lib/useProtocolData.ts`: backfill (`getContractEvents` from `DEPLOY_BLOCK` 275521000, added to `@proof/shared`), live `watchContractEvent` (http→polls ~4s = the poll fallback), `Registry.providers` reads → cards, stats from events, `useBlockNumber` connection dot. `lib/events.ts` = §1.1 on-chain-event→FeedEvent mapping. `LiveDashboard.tsx` wires it (seed fallback pre-migrate). Verified against the real Sepolia chain: backfill+decode+reads reproduce the seed state exactly (2 inferences, 1 challenge, 100% slash, 0.000019 ETH fees; honest ACTIVE, cheat SLASHED, shared H_w). `typecheck` + `next build` green
   - [x] `scripts/demo-driver.ts` (§2.3.5 / §1.2): continuous honest cadence + cheat-every-Nth → SLASH; `pnpm demo:driver`
   - [ ] Vercel deploy — prepared (`vercel.json` + `DEPLOY.md`: root dir, build builds `@proof/shared` first, envs); actual `vercel --prod` + public URL is the remaining manual step (needs your Vercel auth)
-- [ ] scripts/verify.ts: one-command judge path (bytecode + slashed state + SLASHED event + bounty → PASS)
+- [x] scripts/verify.ts: one-command judge path (bytecode + slashed state + SLASHED event + bounty → PASS) — `--chain sepolia|one`; verified live on Sepolia (prints PASS against `0xe429…fac4`)
 - [x] ~~scripts/benchmark: Stylus-vs-Solidity gas table for verify~~ **DROPPED** — built `VerifierSol.sol` (Poseidon via assembly-optimized `poseidon-solidity`, golden-vector + fixture parity), deployed + measured on Sepolia: Stylus 3.70M vs Solidity 3.78M = **~2% parity, no honest gas-win** → not a deliverable (CLAUDE.md: no manufactured wins). See `phase3-plan.md` §1.4/§2.5. Build reverted; testnet deploys orphaned (harmless).
-- [ ] docs: honesty-table, category-rejection paragraph, README, demo script
-- [ ] Migrate/redeploy to Arbitrum One
+- [x] docs: honesty-table, category-rejection paragraph, README, demo script — `README.md` + `DEMO.md`; reconciled 2026-06-11 to ship escrow-on-Sepolia as the demonstrated rail, x402/One as roadmap
+- [x] ~~Migrate/redeploy to Arbitrum One~~ **DESCOPED 2026-06-11** — decision: skip the mainnet migrate, ship the product complete on Sepolia. The stack was made One-ready (`PROOF_CHAIN`/`NEXT_PUBLIC_CHAIN` single-flip, lazy `CONTRACTS`, One RPC wired) but the deploy is left for a funded session (deployer had ~0.00086 ETH vs ~0.005–0.01 needed; x402 also needs buyer USDC + WG tunnel). x402-on-One stays roadmap (proven in the Phase-0 spike). See `phase3-plan.md` §2.7.
 - [ ] Record demo (one mechanic per sentence); buffer
 
 ## Stretch (only after the spine works)

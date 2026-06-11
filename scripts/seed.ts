@@ -9,7 +9,7 @@
  */
 import { createProvider } from "@proof/agents";
 
-import { loadEnv, KEYS, requireEnv, PORTS, addrLink, banner } from "./_env.js";
+import { loadEnv, KEYS, requireEnv, PORTS, addrLink, banner, networkName } from "./_env.js";
 import { readProvider, formatEther } from "./_onchain.js";
 
 async function seedOne(label: string, cheat: boolean, port: number, envKey: string): Promise<void> {
@@ -34,7 +34,7 @@ async function seedOne(label: string, cheat: boolean, port: number, envKey: stri
 
 async function main(): Promise<void> {
   loadEnv();
-  banner("seed — register + stake providers (Arbitrum Sepolia)");
+  banner(`seed — register + stake providers (${networkName()})`);
   await seedOne("provider:honest", false, PORTS.honest, KEYS.providerHonest);
   await seedOne("provider:cheat", true, PORTS.cheat, KEYS.providerCheat);
   console.log("\nProviders staked. Run `pnpm e2e:happy` then `pnpm e2e:cheat`.");

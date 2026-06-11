@@ -289,7 +289,26 @@ was keeping it as a one-line honesty-table footnote). Time reallocates to dashbo
    `pnpm verify` prints PASS. Map each beat to what's on screen. *(No gas-table beat — benchmark
    dropped.)*
 
-### 2.7 Migrate / redeploy to Arbitrum One (§1.5)
+### 2.7 Migrate / redeploy to Arbitrum One (§1.5) — **DESCOPED (decision 2026-06-11)**
+
+> **Decision: skip the Arbitrum One mainnet migrate; ship the product complete on Sepolia.**
+> The escrow rail on Sepolia is the proven, honest money spine (both E2E paths reproduce on-chain),
+> so the MVP needs no mainnet spend. x402-on-One stays **roadmap** — it was proven independently in
+> the Phase-0 spike (live USDC settlement, tx `0xaa38…d3a6`), but the integrated end-to-end x402 run
+> is not part of the shipped MVP.
+>
+> **What was done toward it (in-env, no spend), and kept:** the agent stack + scripts are now
+> network-selectable via a single `PROOF_CHAIN=sepolia|one` var (`packages/agents/src/chain.ts`
+> `resolveNetwork()`; `scripts/_env.ts` `networkKey()/networkName()`), `CONTRACTS` is lazy so
+> importing on `one` pre-deploy doesn't throw, `ARBITRUM_ONE_RPC_URL` is wired for both the agents
+> and foundry's `arbitrum_one` endpoint, and the dashboard flips on `NEXT_PUBLIC_CHAIN`. So the
+> migrate below is a **single-env flip** whenever a funded mainnet session happens.
+>
+> **Why gated (the numbers):** the deployer held ~0.00086 ETH on One vs ~0.005–0.01 needed
+> (dominated by 2× `MIN_STAKE` = 0.002 ETH + the 28.3 KB Stylus deploy/activation); the x402
+> live-run additionally needs the buyer funded ~$1 USDC (held 0) + the Proton WG tunnel.
+>
+> The original step-by-step plan is retained below for the future funded session.
 
 1. Stylus Verifier → One via `cargo stylus deploy` (toolchain is in-env — see §0; no external
    box needed). Needs a funded mainnet deployer key. Record address.
@@ -362,10 +381,11 @@ ends so it isn't a day-21 surprise. `verify.ts` + docs are low-risk and fill par
       category-rejection paragraph + ecosystem benefit, README (quickstart + addresses + URL),
       demo script (one mechanic per sentence). *(§2.6 — `README.md` + `DEMO.md`. README's Vercel
       URL + Arbitrum One addresses left as `pending`, filled at the §2.3 deploy / §2.7 migrate.)*
-- [ ] **Migrate** — Stylus + stack redeployed to Arbitrum One; `ADDRESSES.arbitrumOne` filled;
-      dashboard flipped to One; one happy + one cheat E2E on One with real tx hashes; **x402
-      live-run** settles a real USDC buyer→provider payment (CDP facilitator); `verify --chain
-      one` PASS.
+- [x] ~~**Migrate** — Stylus + stack redeployed to Arbitrum One …~~ **DESCOPED (2026-06-11):**
+      ship complete on Sepolia, skip the mainnet spend. The stack was made One-ready (single-env
+      flip via `PROOF_CHAIN`/`NEXT_PUBLIC_CHAIN`, lazy `CONTRACTS`, One RPC wired) but the deploy +
+      x402 live-run are deferred to a funded session — x402-on-One remains roadmap (proven in the
+      Phase-0 spike). See §2.7.
 - [ ] **Demo recorded** (3-min arc) + TODO.md Phase-3 boxes checked.
 
 ---

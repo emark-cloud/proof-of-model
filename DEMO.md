@@ -20,9 +20,9 @@ PROVIDER_B not yet slashed), `pnpm demo:driver` running in a terminal off-camera
 providers), the live event feed centre, two provider cards right.
 
 **2 — A request flows through (the honest cadence).**
-> "A buyer agent pays a provider per call over x402, the provider returns the output and commits
-> the Merkle root of its activation trace on-chain, and a challenger samples a random path and
-> verifies it."
+> "A buyer agent pays a provider per call — here over the on-chain escrow rail on Sepolia (x402 is
+> the production payment rail) — the provider returns the output and commits the Merkle root of its
+> activation trace on-chain, and a challenger samples a random path and verifies it."
 *On screen:* a `PAYMENT → COMMIT → CHALLENGE → VERIFY → FINALIZE` run of events slides into the
 feed; the VERIFY row reads `VERIFIER: neuron (L2, j3) recomputed ✓ — PASS` with a **green border
 pulse**.

@@ -13,7 +13,7 @@ import type { Address } from "viem";
 
 import { publicClient, makeIdentity, STAKE, FEE } from "@proof/agents";
 
-import { loadEnv, KEYS, requireEnv, addrLink, banner } from "./_env.js";
+import { loadEnv, KEYS, requireEnv, addrLink, banner, networkName } from "./_env.js";
 
 /** Generous gas headroom for a couple of txs on Arbitrum Sepolia. */
 const GAS_BUFFER = 500_000_000_000_000n; // 0.0005 ETH
@@ -34,7 +34,7 @@ const ROLES: Role[] = [
 
 async function main(): Promise<void> {
   loadEnv();
-  banner("fund-check — Arbitrum Sepolia balances");
+  banner(`fund-check — ${networkName()} balances`);
 
   let ok = true;
   for (const role of ROLES) {

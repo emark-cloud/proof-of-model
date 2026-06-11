@@ -9,7 +9,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { CHAINS } from "@proof/shared";
+import { CHAINS, type ChainKey } from "@proof/shared";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 /** Repo root (scripts/ lives one level down). */
@@ -60,8 +60,24 @@ export function requireEnv(name: string): string {
   return v;
 }
 
-// ─── Arbiscan links ─────────────────────────────────────────────────────────
-const EXPLORER = CHAINS.arbitrumSepolia.explorer;
+// ─── Network selection ────────────────────────────────────────────────────────
+/**
+ * Active network key, from the single `PROOF_CHAIN` var (sepolia | one, default
+ * sepolia) — kept in lock-step with `@proof/agents` chain.ts so the scripts'
+ * explorer links and banners follow the same migrate flip.
+ */
+export function networkKey(): ChainKey {
+  const raw = (process.env.PROOF_CHAIN ?? "sepolia").toLowerCase();
+  return raw === "one" || raw === "arbitrumone" || raw === "mainnet"
+    ? "arbitrumOne"
+    : "arbitrumSepolia";
+}
+
+/** Human chain name for banners (`Arbitrum Sepolia` | `Arbitrum One`). */
+export const networkName = (): string => CHAINS[networkKey()].name;
+
+// ─── Arbiscan links (active network) ─────────────────────────────────────────
+const EXPLORER = CHAINS[networkKey()].explorer;
 export const txLink = (hash: string): string => `${EXPLORER}/tx/${hash}`;
 export const addrLink = (addr: string): string => `${EXPLORER}/address/${addr}`;
 

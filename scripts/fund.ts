@@ -18,7 +18,7 @@ import type { Address } from "viem";
 
 import { publicClient, makeIdentity, STAKE, FEE } from "@proof/agents";
 
-import { loadEnv, KEYS, requireEnv, ROOT, addrLink, txLink, banner, sleep } from "./_env.js";
+import { loadEnv, KEYS, requireEnv, ROOT, addrLink, txLink, banner, sleep, networkName } from "./_env.js";
 
 /** Gas headroom for a handful of txs on Arbitrum Sepolia (cheap). */
 const GAS_BUFFER = 1_500_000_000_000_000n; // 0.0015 ETH
@@ -50,7 +50,7 @@ function ensureKeys(): void {
 
 async function main(): Promise<void> {
   loadEnv();
-  banner("fund — deployer → agent accounts (Arbitrum Sepolia)");
+  banner(`fund — deployer → agent accounts (${networkName()})`);
 
   const deployer = makeIdentity(requireEnv("DEPLOYER_KEY"));
   const deployerBal = await publicClient.getBalance({ address: deployer.address });

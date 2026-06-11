@@ -15,6 +15,12 @@ cheats — Arbitrum's optimistic, sampling-based fraud-proof paradigm applied to
   are the documented fallbacks.
 - Chains: **Arbitrum only** — Stylus verifier + contracts dev on **Sepolia**; the **x402 rail is
   Arbitrum One** (CDP has no Sepolia support). Final migrate → One. No Robinhood Chain.
+- **MVP-shipped status (decision 2026-06-11):** the MVP **ships complete on Arbitrum Sepolia** —
+  the **escrow rail** is the demonstrated on-chain money spine (both honest-PASS and cheat-SLASH
+  paths reproduce live). The **Arbitrum One migrate + integrated x402 live-run are descoped to
+  roadmap** (no mainnet spend); x402 itself was proven in the Phase-0 spike. The stack is kept
+  One-ready as a single-env flip (`PROOF_CHAIN`/`NEXT_PUBLIC_CHAIN`). So "x402-first / final
+  migrate → One" above is the **production intent**, not the shipped MVP. See `phase3-plan.md` §2.7.
 - Model: deterministic **3→8→4→2** fixed-point net (Q-format i64). NOT a real LLM — by design.
 - Verification: **single-round, multi-sample** spot-check. The sample is a **random output→input
   path (RandPathTest, per the paper)**, not a single isolated neuron — the single-neuron check is the
