@@ -67,7 +67,7 @@ contract ChallengeManagerTest is Test {
 
         vm.deal(provider, STAKE);
         vm.prank(provider);
-        registry.register{value: STAKE}(WEIGHT_ROOT);
+        registry.register{value: STAKE}(WEIGHT_ROOT, "http://localhost:8546/.well-known/agent-card.json");
 
         cm = m;
     }
@@ -169,7 +169,7 @@ contract ChallengeManagerTest is Test {
         (, uint256 amount) = escrow.deposits(REQ);
         assertEq(amount, 0, "escrow slot cleared");
 
-        (,,, uint64 served,,) = registry.providers(provider);
+        (,,, uint64 served,,,) = registry.providers(provider);
         assertEq(served, 1, "served bumped");
     }
 
@@ -207,7 +207,7 @@ contract ChallengeManagerTest is Test {
         assertEq(chal, challenger);
         assertEq(uint8(status), uint8(ChallengeManager.Status.Challenged));
 
-        (,,,, uint64 challenged,) = registry.providers(provider);
+        (,,,, uint64 challenged,,) = registry.providers(provider);
         assertEq(challenged, 1);
     }
 
@@ -248,7 +248,7 @@ contract ChallengeManagerTest is Test {
         cm.resolveChallenge(REQ, badProof);
 
         // Full stake slashed; provider stake zeroed + deactivated; slashed counter up.
-        (, uint256 stake, bool active,,, uint64 slashed) = registry.providers(provider);
+        (, uint256 stake, bool active,,, uint64 slashed,) = registry.providers(provider);
         assertEq(stake, 0, "stake fully slashed");
         assertFalse(active, "provider deactivated");
         assertEq(slashed, 1, "slashed counter");
@@ -283,7 +283,7 @@ contract ChallengeManagerTest is Test {
         cm.resolveChallenge(REQ, goodProof);
 
         // No slash: stake intact, provider active, fee still escrowed.
-        (, uint256 stake, bool active,,, uint64 slashed) = registry.providers(provider);
+        (, uint256 stake, bool active,,, uint64 slashed,) = registry.providers(provider);
         assertEq(stake, STAKE, "stake intact");
         assertTrue(active);
         assertEq(slashed, 0);

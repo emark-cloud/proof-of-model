@@ -16,12 +16,13 @@ import type { Server } from "node:http";
 import type { Address, Hex } from "viem";
 
 import { forward, commit, openPath, encodePathProof, weightRoot, CORRUPT_NODE, type PathSpec } from "@proof/model";
-import { toFixed, fromFixed, type Fixed } from "@proof/shared";
+import { toFixed, fromFixed, CHAINS, type Fixed } from "@proof/shared";
 
 import {
   publicClient,
   makeIdentity,
   CONTRACTS,
+  NETWORK,
   registryAbi,
   challengeManagerAbi,
   STAKE,
@@ -29,6 +30,7 @@ import {
   outputHashOf,
   bytesToHex,
 } from "./chain.js";
+import { buildAgentCard, cardUriFor, WELL_KNOWN_PATH } from "./card.js";
 
 /**
  * The corrupt-trace delta — MUST match `buildBadFixture` (+= 1000n at CORRUPT_NODE)
@@ -91,6 +93,17 @@ export async function createProvider(config: ProviderConfig): Promise<ProviderHa
   const { cheat, port } = config;
   const id = makeIdentity(config.privateKey);
   const store = new Map<Hex, StoredTrace>();
+  const url = `http://localhost:${port}`;
+
+  /** This provider's Agent Card (ERC-8004 discovery metadata). */
+  const agentCard = () =>
+    buildAgentCard({
+      url,
+      agentAddress: id.address,
+      registry: CONTRACTS.Registry,
+      chainId: CHAINS[NETWORK].id,
+      weightRoot: feltToBytes32(weightRoot()),
+    });
 
   async function ensureRegistered(): Promise<void> {
     const active = (await publicClient.readContract({
@@ -105,7 +118,9 @@ export async function createProvider(config: ProviderConfig): Promise<ProviderHa
       address: CONTRACTS.Registry,
       abi: registryAbi,
       functionName: "register",
-      args: [hwRoot],
+      // weightRoot + the ERC-8004 pointer to this provider's Agent Card, so a buyer
+      // can discover the /infer endpoint on-chain without any out-of-band config.
+      args: [hwRoot, cardUriFor(url)],
       value: STAKE,
       account: id.account,
       chain: id.wallet.chain,
@@ -115,6 +130,12 @@ export async function createProvider(config: ProviderConfig): Promise<ProviderHa
 
   const app = express();
   app.use(express.json());
+
+  // GET /.well-known/agent-card.json — the off-chain card the Registry's metadataURI
+  // points to. Read-only, unauthenticated; the buyer validates it against on-chain state.
+  app.get(WELL_KNOWN_PATH, (_req, res) => {
+    res.json(agentCard());
+  });
 
   // POST /infer — run the model, commit R on-chain, return the result.
   app.post("/infer", async (req, res) => {

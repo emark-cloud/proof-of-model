@@ -45,12 +45,15 @@ export const ADDRESSES: Record<ChainKey, Deployment> = {
     // uint256/uint8[], a selector mismatch vs IVerifier that reverted every call).
     // The original d52f6b0 deploy (0xd46e…a057) had the same latent mismatch.
     Verifier: "0xe19dfd6abae5b0b815dd6b3d8f90126fe68b79ae",
-    // Phase-2 redesign (requestId lifecycle + Escrow impl), finalizeWindow=30s.
-    // Redeployed wired to the fixed verifier above — the manager's `verifier` is
-    // immutable and Registry/Escrow managers are set-once, so the whole stack moves.
-    Registry: "0x35198835f689e05bB363f09472360b5D9a44711b",
-    ChallengeManager: "0xc3135c7DbB5EcB87a4F99a538318d968079e96A3",
-    Escrow: "0x6149f5fB00ec427727e67DD51E7278ED0Bf553cd",
+    // ERC-8004 discovery redeploy: Registry.Provider now carries a `metadataURI`
+    // Agent-Card pointer (register signature + providers() tuple changed), so the
+    // stack was redeployed wired to the same immutable verifier above — the manager's
+    // `verifier` is immutable and Registry/Escrow managers are set-once, so the whole
+    // stack moves together. finalizeWindow=30s. (Prior Phase-2 set: Registry
+    // 0x3519…711b / CM 0xc313…96A3 / Escrow 0x6149…53cd.)
+    Registry: "0x7Cded5D29AABF706A838A5905f04659fF7e26905",
+    ChallengeManager: "0xEa1De74020BdBaC64159470f69e0E37c40AFBDA0",
+    Escrow: "0x6f4CdC30f8F5bd14d60344197d81B96E6a6c4b48",
   },
   arbitrumOne: { ...EMPTY },
 };
@@ -58,11 +61,11 @@ export const ADDRESSES: Record<ChainKey, Deployment> = {
 /**
  * Deploy block per chain — the `fromBlock` anchor for the dashboard's historical
  * backfill (getLogs from here, not genesis: the public RPC can't sweep the full
- * chain). Sepolia: the Phase-2 Registry deploy (broadcast run-latest, block
- * 275521029); a small margin is shaved off so no early log is missed. Null until
- * the chain is deployed (Arbitrum One pre-migrate).
+ * chain). Sepolia: the ERC-8004 discovery Registry deploy (broadcast run-latest,
+ * block 276201147); a small margin is shaved off so no early log is missed. Null
+ * until the chain is deployed (Arbitrum One pre-migrate).
  */
 export const DEPLOY_BLOCK: Record<ChainKey, bigint | null> = {
-  arbitrumSepolia: 275521000n,
+  arbitrumSepolia: 276201100n,
   arbitrumOne: null,
 };

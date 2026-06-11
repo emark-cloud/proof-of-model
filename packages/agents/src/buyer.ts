@@ -13,6 +13,7 @@
 import type { Address, Hex } from "viem";
 
 import { makeIdentity, publicClient, CONTRACTS, escrowAbi, FEE, requestIdOf } from "./chain.js";
+import { discoverProviders } from "./discover.js";
 
 export type Rail = "escrow" | "x402";
 
@@ -26,8 +27,10 @@ export interface BuyerConfig {
 }
 
 export interface BuyParams {
-  providerUrl: string;
-  providerAddress: Address;
+  /** Provider endpoint. Omit to discover one permissionlessly from the Registry. */
+  providerUrl?: string;
+  /** Provider address. Omit (with providerUrl) to take the best discovered provider. */
+  providerAddress?: Address;
   input: number[];
   /** Unique nonce binding this request; auto-generated if omitted. */
   nonce?: bigint;
@@ -65,7 +68,11 @@ export function createBuyer(config: BuyerConfig): BuyerHandle {
   async function buy(params: BuyParams): Promise<BuyResult> {
     const fee = params.fee ?? defaultFee;
     const nonce = params.nonce ?? nextNonce();
-    const requestId = requestIdOf(id.address, params.providerAddress, nonce);
+
+    // Resolve the provider: caller-supplied URL+address, or permissionless discovery
+    // from the Registry (scan ProviderRegistered → validate Agent Card → best-ranked).
+    const { providerUrl, providerAddress } = await resolveProvider(params);
+    const requestId = requestIdOf(id.address, providerAddress, nonce);
 
     let receipt: string;
     if (rail === "escrow") {
@@ -83,10 +90,10 @@ export function createBuyer(config: BuyerConfig): BuyerHandle {
     } else {
       // x402 rail — DEFERRED to the Phase-3 Arbitrum One migrate (needs a funded
       // USDC wallet). Lifts the proven spike; not exercised in the Sepolia E2E.
-      receipt = await x402Pay(config.privateKey, params.providerUrl, params.input);
+      receipt = await x402Pay(config.privateKey, providerUrl, params.input);
     }
 
-    const res = await fetch(`${params.providerUrl}/infer`, {
+    const res = await fetch(`${providerUrl}/infer`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ input: params.input, requestId }),
@@ -112,6 +119,35 @@ export function createBuyer(config: BuyerConfig): BuyerHandle {
   }
 
   return { address: id.address, rail, buy };
+}
+
+/**
+ * Resolve which provider to call. If the caller passed a URL+address, use them as-is.
+ * Otherwise discover permissionlessly from the Registry: an explicit `providerAddress`
+ * pins the choice (its validated card supplies the URL); with neither, take the
+ * best-ranked discovered provider. Throws if nothing usable is found on-chain.
+ */
+async function resolveProvider(
+  params: BuyParams,
+): Promise<{ providerUrl: string; providerAddress: Address }> {
+  if (params.providerUrl && params.providerAddress) {
+    return { providerUrl: params.providerUrl, providerAddress: params.providerAddress };
+  }
+  const found = await discoverProviders();
+  const pick = params.providerAddress
+    ? found.find((p) => p.address.toLowerCase() === params.providerAddress!.toLowerCase())
+    : found[0];
+  if (!pick) {
+    throw new Error(
+      params.providerAddress
+        ? `buyer: provider ${params.providerAddress} not discoverable (inactive or no valid Agent Card)`
+        : "buyer: no active providers discovered on-chain",
+    );
+  }
+  return {
+    providerUrl: params.providerUrl ?? pick.url,
+    providerAddress: params.providerAddress ?? pick.address,
+  };
 }
 
 /**

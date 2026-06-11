@@ -18,6 +18,14 @@ contract Registry {
         uint64 served; // inference requests confirmed delivered
         uint64 challenged; // times challenged
         uint64 slashed; // times stake was slashed
+        // ERC-8004 registration pointer → the provider's off-chain Agent Card
+        // (a JSON served at e.g. <url>/.well-known/agent-card.json). The chain stays
+        // the authoritative source of weightRoot/stake; the card merely *advertises*
+        // the endpoint, so a buyer discovers providers permissionlessly by scanning
+        // ProviderRegistered, reading this URI, and cross-checking the card against
+        // on-chain state. APPENDED LAST so the providers() tuple indices 0..5 — read
+        // across the agents, scripts and dashboard — stay stable.
+        string metadataURI;
     }
 
     /// @notice The Stylus Verifier wired at deploy time (queried by ChallengeManager).
@@ -29,7 +37,8 @@ contract Registry {
 
     mapping(address => Provider) public providers;
 
-    event ProviderRegistered(address indexed provider, bytes32 indexed weightRoot, uint256 stake);
+    event ProviderRegistered(address indexed provider, bytes32 indexed weightRoot, uint256 stake, string metadataURI);
+    event ProviderMetadataUpdated(address indexed provider, string metadataURI);
     event ProviderWithdrew(address indexed provider, uint256 amount);
     event ManagerSet(address indexed manager);
 
@@ -52,7 +61,9 @@ contract Registry {
     }
 
     /// @notice Register as a provider committing to model `weightRoot`, bonding msg.value.
-    function register(bytes32 weightRoot) external payable {
+    /// @param metadataURI ERC-8004 pointer to the provider's off-chain Agent Card (the URL
+    ///        a buyer fetches to discover this provider's inference endpoint). May be empty.
+    function register(bytes32 weightRoot, string calldata metadataURI) external payable {
         require(weightRoot != bytes32(0), "Registry: zero weightRoot");
         require(!providers[msg.sender].active, "Registry: already registered");
         require(msg.value >= MIN_STAKE, "Registry: below min stake");
@@ -62,9 +73,18 @@ contract Registry {
             active: true,
             served: 0,
             challenged: 0,
-            slashed: 0
+            slashed: 0,
+            metadataURI: metadataURI
         });
-        emit ProviderRegistered(msg.sender, weightRoot, msg.value);
+        emit ProviderRegistered(msg.sender, weightRoot, msg.value, metadataURI);
+    }
+
+    /// @notice Update the Agent Card pointer (move endpoint) without re-staking — keeps
+    ///         stake and reputation counters intact. Only an active provider may call.
+    function setMetadataURI(string calldata metadataURI) external {
+        require(providers[msg.sender].active, "Registry: not registered");
+        providers[msg.sender].metadataURI = metadataURI;
+        emit ProviderMetadataUpdated(msg.sender, metadataURI);
     }
 
     /// @notice Withdraw full stake and deregister. Phase 2 adds challenge-window lock.
@@ -93,6 +113,11 @@ contract Registry {
     /// @notice Convenience view: a provider's current bonded stake.
     function stakeOf(address provider) external view returns (uint256) {
         return providers[provider].stake;
+    }
+
+    /// @notice Convenience view: a provider's Agent Card pointer (avoids tuple destructuring).
+    function metadataURIOf(address provider) external view returns (string memory) {
+        return providers[provider].metadataURI;
     }
 
     // ─── Manager-gated reputation + slash functions ──────────────────────────

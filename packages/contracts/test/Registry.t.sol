@@ -7,6 +7,9 @@ import {Registry} from "../src/Registry.sol";
 contract RegistryTest is Test {
     Registry internal registry;
 
+    /// Demo Agent Card URI passed on registration (ERC-8004 metadata pointer).
+    string internal constant CARD = "http://localhost:8546/.well-known/agent-card.json";
+
     function setUp() public {
         // Pass address(0) for verifier — Registry stores it but does not call it directly.
         registry = new Registry(address(0));
@@ -16,9 +19,9 @@ contract RegistryTest is Test {
 
     function test_register_storesProviderAndStake() public {
         bytes32 hW = keccak256("model-weight-root");
-        registry.register{value: 1 ether}(hW);
+        registry.register{value: 1 ether}(hW, CARD);
 
-        (bytes32 weightRoot, uint256 stake, bool active,,,) = registry.providers(address(this));
+        (bytes32 weightRoot, uint256 stake, bool active,,,,) = registry.providers(address(this));
         assertEq(weightRoot, hW);
         assertEq(stake, 1 ether);
         assertTrue(active);
@@ -26,16 +29,44 @@ contract RegistryTest is Test {
 
     function test_register_revertsOnZeroRoot() public {
         vm.expectRevert("Registry: zero weightRoot");
-        registry.register(bytes32(0));
+        registry.register(bytes32(0), CARD);
+    }
+
+    // ─── Agent Card metadata (ERC-8004 discovery pointer) ─────────────────────
+
+    function test_register_storesMetadataURI() public {
+        bytes32 hW = keccak256("model-weight-root");
+        registry.register{value: 1 ether}(hW, CARD);
+        assertEq(registry.metadataURIOf(address(this)), CARD);
+    }
+
+    function test_setMetadataURI_updatesAndEmits() public {
+        bytes32 hW = keccak256("model-weight-root");
+        registry.register{value: 1 ether}(hW, CARD);
+
+        string memory moved = "https://provider-a.example/.well-known/agent-card.json";
+        vm.expectEmit(true, false, false, true);
+        emit Registry.ProviderMetadataUpdated(address(this), moved);
+        registry.setMetadataURI(moved);
+
+        assertEq(registry.metadataURIOf(address(this)), moved);
+        // Stake + active intact — moving the endpoint must not touch the bond.
+        assertEq(registry.stakeOf(address(this)), 1 ether);
+        assertTrue(registry.isActive(address(this)));
+    }
+
+    function test_setMetadataURI_revertsIfNotRegistered() public {
+        vm.expectRevert("Registry: not registered");
+        registry.setMetadataURI(CARD);
     }
 
     // ─── Reputation fields ────────────────────────────────────────────────────
 
     function test_reputation_defaultsToZero() public {
         bytes32 hW = keccak256("model-weight-root");
-        registry.register{value: 1 ether}(hW);
+        registry.register{value: 1 ether}(hW, CARD);
 
-        (,,,uint64 served, uint64 challenged, uint64 slashed) = registry.providers(address(this));
+        (,,,uint64 served, uint64 challenged, uint64 slashed,) = registry.providers(address(this));
         assertEq(served, 0);
         assertEq(challenged, 0);
         assertEq(slashed, 0);
@@ -43,7 +74,7 @@ contract RegistryTest is Test {
 
     function test_weightRootOf_returnsCorrectRoot() public {
         bytes32 hW = keccak256("model-weight-root");
-        registry.register{value: 1 ether}(hW);
+        registry.register{value: 1 ether}(hW, CARD);
         assertEq(registry.weightRootOf(address(this)), hW);
     }
 
@@ -52,7 +83,7 @@ contract RegistryTest is Test {
         assertFalse(registry.isActive(address(this)));
         assertEq(registry.stakeOf(address(this)), 0);
 
-        registry.register{value: 1 ether}(hW);
+        registry.register{value: 1 ether}(hW, CARD);
         assertTrue(registry.isActive(address(this)));
         assertEq(registry.stakeOf(address(this)), 1 ether);
 
@@ -100,21 +131,21 @@ contract RegistryTest is Test {
     function test_register_revertsOnZeroStake() public {
         bytes32 hW = keccak256("model-weight-root");
         vm.expectRevert("Registry: below min stake");
-        registry.register(hW); // no value
+        registry.register(hW, CARD); // no value
     }
 
     // ─── Withdraw ─────────────────────────────────────────────────────────────
 
     function test_withdraw_returnsStakeAndDeregisters() public {
         bytes32 hW = keccak256("model-weight-root");
-        registry.register{value: 1 ether}(hW);
+        registry.register{value: 1 ether}(hW, CARD);
 
         uint256 balanceBefore = address(this).balance;
         registry.withdraw();
         uint256 balanceAfter = address(this).balance;
 
         assertEq(balanceAfter - balanceBefore, 1 ether);
-        (,, bool active,,,) = registry.providers(address(this));
+        (,, bool active,,,,) = registry.providers(address(this));
         assertFalse(active);
     }
 
@@ -125,9 +156,9 @@ contract RegistryTest is Test {
 
     function test_register_revertsOnDoubleRegister() public {
         bytes32 hW = keccak256("model-weight-root");
-        registry.register{value: 1 ether}(hW);
+        registry.register{value: 1 ether}(hW, CARD);
         vm.expectRevert("Registry: already registered");
-        registry.register{value: 1 ether}(hW);
+        registry.register{value: 1 ether}(hW, CARD);
     }
 
     // ─── Slash (manager-gated, money-moving core) ─────────────────────────────
@@ -137,7 +168,7 @@ contract RegistryTest is Test {
         bytes32 hW = keccak256("model-weight-root");
         vm.deal(provider, 1 ether);
         vm.prank(provider);
-        registry.register{value: 1 ether}(hW);
+        registry.register{value: 1 ether}(hW, CARD);
         registry.setManager(mgr);
     }
 
@@ -152,7 +183,7 @@ contract RegistryTest is Test {
 
         assertEq(actual, 0.4 ether);
         assertEq(mgr.balance - mgrBefore, 0.4 ether);
-        (, uint256 stake, bool active,,, uint64 slashed) = registry.providers(provider);
+        (, uint256 stake, bool active,,, uint64 slashed,) = registry.providers(provider);
         assertEq(stake, 0.6 ether);
         assertTrue(active);
         assertEq(slashed, 1);
@@ -167,7 +198,7 @@ contract RegistryTest is Test {
         uint256 actual = registry.slash(provider, 5 ether); // request exceeds stake
 
         assertEq(actual, 1 ether); // capped at available stake
-        (, uint256 stake, bool active,,,) = registry.providers(provider);
+        (, uint256 stake, bool active,,,,) = registry.providers(provider);
         assertEq(stake, 0);
         assertFalse(active); // deactivated when fully slashed
     }
@@ -190,7 +221,7 @@ contract RegistryTest is Test {
         vm.prank(mgr);
         registry.recordChallenged(provider);
 
-        (,,, uint64 served, uint64 challenged,) = registry.providers(provider);
+        (,,, uint64 served, uint64 challenged,,) = registry.providers(provider);
         assertEq(served, 1);
         assertEq(challenged, 1);
     }

@@ -8,6 +8,7 @@ import { fromFixed } from "@proof/shared";
 import { computeInference } from "./provider.js";
 import { requestIdOf, outputHashOf, feltToBytes32 } from "./chain.js";
 import { findCheatPath, deriveSeed } from "./challenger.js";
+import { buildAgentCard, validateCard, cardUriFor, type CardExpectation } from "./card.js";
 
 // ── provider: corruption matches the golden known-bad fixture ──────────────────
 test("computeInference(honest) == buildGoodFixture root", () => {
@@ -93,4 +94,53 @@ test("findCheatPath passes an honest provider (no failing path)", async () => {
 test("deriveSeed / samplePath is deterministic", () => {
   assert.equal(deriveSeed(REQ, ROOT, CH, 3), deriveSeed(REQ, ROOT, CH, 3));
   assert.notEqual(deriveSeed(REQ, ROOT, CH, 3), deriveSeed(REQ, ROOT, CH, 4));
+});
+
+// ── discovery: Agent Card cross-checks against on-chain state ───────────────────
+const PROVIDER = "0x4444444444444444444444444444444444444444" as Address;
+const REGISTRY = "0x5555555555555555555555555555555555555555" as Address;
+const WROOT = ("0x" + "ef".repeat(32)) as Hex;
+const EXPECT: CardExpectation = {
+  agentAddress: PROVIDER,
+  registry: REGISTRY,
+  chainId: 421614,
+  weightRoot: WROOT,
+};
+const goodCard = () =>
+  buildAgentCard({ url: "http://localhost:8546", agentAddress: PROVIDER, registry: REGISTRY, chainId: 421614, weightRoot: WROOT });
+
+test("cardUriFor appends the well-known path (no double slash)", () => {
+  assert.equal(cardUriFor("http://localhost:8546"), "http://localhost:8546/.well-known/agent-card.json");
+  assert.equal(cardUriFor("http://localhost:8546/"), "http://localhost:8546/.well-known/agent-card.json");
+});
+
+test("validateCard accepts a well-formed matching card", () => {
+  assert.equal(validateCard(goodCard(), EXPECT).ok, true);
+});
+
+test("validateCard rejects a wrong weight root (advertising a different model)", () => {
+  const c = goodCard();
+  c.model.weightRoot = ("0x" + "00".repeat(32)) as Hex;
+  const v = validateCard(c, EXPECT);
+  assert.equal(v.ok, false);
+  assert.match(v.reason ?? "", /weightRoot/);
+});
+
+test("validateCard rejects a card bound to a different provider address (impersonation)", () => {
+  const c = goodCard();
+  c.registrations[0]!.agentAddress = "0x9999999999999999999999999999999999999999" as Address;
+  assert.equal(validateCard(c, EXPECT).ok, false);
+});
+
+test("validateCard rejects a card claiming a different registry/chain", () => {
+  const wrongRegistry = { ...EXPECT, registry: "0x0000000000000000000000000000000000000001" as Address };
+  assert.equal(validateCard(goodCard(), wrongRegistry).ok, false);
+  const wrongChain = { ...EXPECT, chainId: 1 };
+  assert.equal(validateCard(goodCard(), wrongChain).ok, false);
+});
+
+test("validateCard rejects malformed input", () => {
+  assert.equal(validateCard(null, EXPECT).ok, false);
+  assert.equal(validateCard({}, EXPECT).ok, false);
+  assert.equal(validateCard({ url: "not-a-url" }, EXPECT).ok, false);
 });

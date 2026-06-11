@@ -10,6 +10,8 @@
  * Shared chain access (viem clients, contracts, requestId helpers) lives in chain.ts.
  */
 export * from "./chain.js";
+export * from "./card.js";
+export * from "./discover.js";
 export * from "./provider.js";
 export * from "./buyer.js";
 export * from "./challenger.js";

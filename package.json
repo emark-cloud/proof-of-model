@@ -24,6 +24,7 @@
     "seed": "tsx scripts/seed.ts",
     "e2e:happy": "tsx scripts/e2e-happy.ts",
     "e2e:cheat": "tsx scripts/e2e-cheat.ts",
+    "e2e:discover": "tsx scripts/e2e-discover.ts",
     "demo:driver": "tsx scripts/demo-driver.ts",
     "verify": "tsx scripts/verify.ts"
   },
