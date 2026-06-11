@@ -24,6 +24,16 @@ cache/
 broadcast/
 packages/contracts/dependencies/
 
+# Local planning / working docs (untracked)
+phase0-paper-review.md
+phase0-spike-results.md
+TODO.md
+design.md
+phase1-plan.md
+phase2-plan.md
+phase3-plan.md
+Offchain-Labs-paper.pdf
+
 # OS
 .DS_Store
 
