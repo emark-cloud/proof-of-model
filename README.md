@@ -34,14 +34,25 @@ flowchart TD
 **How verification works.** The model is a deterministic `3→8→4→2` fixed-point net (Q-format i64),
 its weights committed by hash `H_w`. For each request the provider commits the full activation
 trace as a Poseidon-Merkle root `R`. A challenger samples a **random path from a random output
-neuron back to the immutable input layer** (`RandPathTest`, per the paper) and demands an opening:
-each node's activation (proof against `R`), its weight row + bias (proof against `H_w`), and the
-full parent-layer activations (proofs against `R`). The Stylus verifier checks the Merkle proofs
-and recomputes `a_j = φ(Σ wᵢⱼ·aᵢ + bⱼ)` in fixed-point at every node on the path, asserting each
-holds → PASS/FAIL. A provider serving a cheaper model produces a trace inconsistent with `H_w`
-along the path and is caught. (Why a *path* and not one isolated neuron: the single-neuron check is
-the paper's rejected `RandTestStrawman` — it passes vacuously in early layers even when the output
-is wrong. Anchoring at the output and walking to the input is what gives the test soundness.)
+neuron back to the immutable input layer** and demands an opening: each node's activation (proof
+against `R`), its weight row + bias (proof against `H_w`), and the full parent-layer activations
+(proofs against `R`). The Stylus verifier checks the Merkle proofs and recomputes
+`a_j = φ(Σ wᵢⱼ·aᵢ + bⱼ)` in fixed-point at every node on the path, asserting each holds →
+PASS/FAIL. A provider serving a cheaper model produces a trace inconsistent with `H_w` along the
+path and is caught.
+
+**Why a sampled path — the research basis.** The check walks a *path*, not a single isolated
+neuron, by design. A single-neuron check passes vacuously in early layers even when the output is
+wrong; anchoring at a random output neuron and walking back to the immutable input is what gives
+the test its soundness — to pass while serving a cheap output, a provider would have to produce a
+trace consistent with `H_w` along *every* sampled path, i.e. actually run the real model. A single
+path bounds detection of a one-node cheat at `~1/N` (`N` = max layer width), so we sample multiple
+independent paths to raise it. This follows the verifiable-inference protocol of Anchuri,
+Campanelli, Cesaretti, Gennaro, Jois, Kayman & Ozdemir, *"Towards Verifiable AI with Lightweight
+Cryptographic Proofs of Inference"* (IEEE SaTML 2026; IACR eprint 2026/541): the path check is the
+paper's **`RandPathTest`**, the rejected single-neuron variant its **`RandTestStrawman`**, and
+multi-sample (plus interactive bisection, on our roadmap) are its stated routes to tighter
+soundness.
 
 | Package | Role |
 |---|---|

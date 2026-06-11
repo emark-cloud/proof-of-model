@@ -89,7 +89,7 @@ const HONESTY = [
     shipped:
       "Single-round, multi-sample: K independent random output→input paths. Per-path detection of a one-node cheat is ~1/N; K paths raise it.",
     roadmap:
-      "Interactive multi-round bisection (the paper's refereed model) — O(log N) rounds to localize the first disputed node.",
+      "Interactive multi-round bisection (a refereed-game model) — O(log N) rounds to localize the first disputed node.",
   },
   {
     aspect: "Payment rail",
@@ -213,31 +213,6 @@ export default function Landing() {
           <p className="mt-5 font-mono text-sm leading-relaxed text-text-secondary">
             No human approves any step — the agents police each other, and the heavy
             verification math runs on-chain in a Stylus (Rust) contract.
-          </p>
-        </Section>
-
-        {/* ── Why a path ───────────────────────────────────────────────── */}
-        <Section
-          kicker="The soundness"
-          title="Why a random path, not a single neuron"
-        >
-          <p className="font-mono text-sm leading-relaxed text-text-secondary">
-            The challenger anchors at a random{" "}
-            <span className="text-text-primary">output</span> neuron and walks back to
-            the immutable <span className="text-text-primary">input</span> layer
-            (the paper&apos;s <Mono>RandPathTest</Mono>). At each node it recomputes
-            the activation from the committed real weights in <Mono>H_w</Mono> and the
-            opened parent activations from <Mono>R</Mono>, then asserts a match —
-            looping that same check along the whole path.
-          </p>
-          <p className="mt-4 font-mono text-sm leading-relaxed text-text-secondary">
-            A single isolated-neuron check (the paper&apos;s rejected{" "}
-            <Mono>RandTestStrawman</Mono>) passes vacuously in early layers even when
-            the output is wrong. Anchoring at the output is what gives the test its
-            teeth: to pass while serving a cheap output, a provider would have to
-            produce a trace consistent with <Mono>H_w</Mono> along{" "}
-            <span className="text-text-primary">every</span> sampled path — i.e.
-            actually run the real model.
           </p>
         </Section>
 
