@@ -9,7 +9,7 @@ is the missing trust rail: providers **commit to which model they ran** (a Posei
 the activation trace), buyers **pay per call via x402**, and challengers **spot-check a random
 output→input path and slash provable cheats**. It is Arbitrum's optimistic, sampling-based
 fraud-proof paradigm applied to ML inference — *the trust rail, not a compute provider* — with the
-heavy verification math in a Stylus contract that does what the EVM can't do cheaply.
+heavy verification math in a Stylus contract.
 
 ---
 
