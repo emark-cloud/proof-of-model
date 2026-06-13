@@ -131,8 +131,7 @@ The MVP proves the verification *primitive* and the economic game, end-to-end an
 | **Challengers** | 1–2 challenger agents. | Large challenger swarm + economic parameter tuning. |
 | **Payment rail** | The MVP's demonstrated money spine is the **escrow rail on Sepolia**: it holds the fee, releases to the provider on finalize minus a 5% protocol cut, and **refunds the buyer on a proven slash** — the honest-PASS and cheat-SLASH paths both run end-to-end on-chain. The **x402** buyer→provider rail is wired behind a `PAYMENT_RAIL=x402\|escrow` flag and was proven independently in a Phase-0 spike (live USDC settlement on Arbitrum One). | Running **x402 end-to-end integrated on Arbitrum One** (CDP has no Sepolia support) + a hardened x402 facilitator. The migrate is a single-env flip; it needs a funded mainnet deployer. |
 | **x402 no-fee-refund nuance** | When the x402 rail is used it *direct-settles* USDC to the provider, so it has **no fee-refund-on-slash** — there the deterrent is purely the **stake slash + bounty** (which works on either rail), not the fee clawback. The shipped escrow rail adds the buyer refund on top. | — |
-| **Demo economics** | A ~30s finalize window and tiny stakes make the cheat catchable on camera. | This is a demo window, **not** production economics. |
-| **Gas benchmark** | *Dropped.* A Stylus-vs-Solidity `verifyPath` gas table was built and measured at **~2% parity** — no honest gas-win, so we ship no benchmark claim rather than invent a multiplier. The Stylus value here is feasibility of the recompute on-chain, not a headline number. | — |
+
 
 ---
 
