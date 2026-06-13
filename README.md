@@ -122,9 +122,7 @@ optional cosmetic wallet connect, no user actions.
 
 ## What's live, what's roadmap
 
-The MVP proves the verification *primitive* and the economic game, end-to-end and on-chain. It is
-deliberately narrow; we state the scope plainly (the StarkVerifier lesson: ship the honest result,
-not a fictional multiplier).
+The MVP proves the verification *primitive* and the economic game, end-to-end and on-chain.
 
 | Aspect | MVP (shipped) | Roadmap / out of scope |
 |---|---|---|
