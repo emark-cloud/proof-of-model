@@ -115,7 +115,63 @@ a horizontal need across every agent-payments stack, not a niche."
 **Headline:**
 > Three autonomous agents over an on-chain trust core — with the heavy math in a Stylus contract.
 
-**Body — the system map (build this as boxes-and-arrows on the slide):**
+**Presentation version — put THIS on the slide** (numbered flow, Stylus Verifier highlighted,
+dashboard reads de-emphasized). Renders directly in any mermaid tool (Gamma, Notion, GitHub):
+
+```mermaid
+flowchart LR
+    subgraph offchain["OFF-CHAIN AGENTS"]
+        Buyer["Buyer agent"]
+        Provider["Provider agent<br/>honest + cheat"]
+        Challenger["Challenger agent<br/>auditor"]
+    end
+
+    subgraph onchain["ON-CHAIN · ARBITRUM"]
+        Escrow["Escrow / Fee"]
+        Registry["Registry + Staking"]
+        CM["Challenge Manager"]
+        Verifier["★ STYLUS VERIFIER ★<br/>recompute the path"]
+    end
+
+    Dash["Dashboard · read-only"]
+
+    Buyer -->|"① pay per call"| Escrow
+    Buyer -->|"② request"| Provider
+    Provider -->|"③ commit trace root R"| Registry
+    Challenger -->|"④ sample + open path"| Provider
+    Challenger -->|"⑤ challenge"| CM
+    CM -->|"⑥ verify path"| Verifier
+    Verifier -->|"⑦ PASS / FAIL"| CM
+    CM -->|"⑧ slash + bounty"| Registry
+
+    Registry -.-> Dash
+    Escrow -.-> Dash
+    CM -.-> Dash
+
+    classDef agent fill:#dbeafe,stroke:#2563eb,color:#1e3a5f;
+    classDef chain fill:#f1f5f9,stroke:#64748b,color:#1e293b;
+    classDef core fill:#fde68a,stroke:#d97706,stroke-width:3px,color:#7c2d12;
+    classDef view fill:#f8fafc,stroke:#cbd5e1,color:#94a3b8;
+    class Buyer,Provider,Challenger agent;
+    class Escrow,Registry,CM chain;
+    class Verifier core;
+    class Dash view;
+    linkStyle 5,6 stroke:#d97706,stroke-width:2.5px,color:#b45309;
+    linkStyle 8,9,10 stroke:#cbd5e1,stroke-width:1px,color:#94a3b8;
+```
+
+**If you're drawing it by hand instead** (Keynote / Figma / PowerPoint), the recipe:
+- **Two zones** — a left box "OFF-CHAIN AGENTS" (3 agents, blue), a right box "ON-CHAIN ·
+  ARBITRUM" (4 contracts, grey). Dashboard sits below/outside, muted.
+- **Make the Stylus Verifier pop** — amber fill, thick border, a ★. It's the deep-eng core; the
+  eye should land there.
+- **Number the arrows ①–⑧** so you can walk the story in order; the `⑥ verify → ⑦ PASS/FAIL`
+  loop into the Verifier is the punchline — give those two arrows the accent colour.
+- **Dash the three `→ Dashboard` arrows** (thin, grey) so they read as "just watching," not part
+  of the money loop.
+
+<details>
+<summary>Full reference diagram (every arrow, incl. the provider→challenger opening round-trip)</summary>
 
 ```mermaid
 flowchart LR
@@ -147,6 +203,8 @@ flowchart LR
     Escrow --> Dashboard
     ChallengeMgr --> Dashboard
 ```
+
+</details>
 
 **Callouts to put on the slide:**
 - **★ Stylus Verifier (Rust/WASM) — the core.** Verifies Poseidon Merkle proofs + recomputes each
