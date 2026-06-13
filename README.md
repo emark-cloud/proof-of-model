@@ -126,7 +126,7 @@ The MVP proves the verification *primitive* and the economic game, end-to-end an
 
 | Aspect | MVP (shipped) | Roadmap / out of scope |
 |---|---|---|
-| **Model** | Deterministic `3→8→4→2` fixed-point net. Determinism is *required* for the exact-equality recompute — it's a scope choice, not a weakness. | Real / non-deterministic LLMs via tolerance-band commitments. |
+| **Model** | Deterministic `3→8→4→2` fixed-point net. Determinism is *required* for the exact-equality recompute  | Real / non-deterministic LLMs via tolerance-band commitments. |
 | **Verification** | Single-round, **multi-sample**: K independent random output→input paths. Per-path detection of a single-node cheat is bounded at `~1/N` (N = max layer width); K paths raise it. The demo is sized so the cheat is caught. | Interactive multi-round **bisection** (the paper's refereed model, App. D) — `O(log N)` rounds to localize the first disputed node. |
 | **Challengers** | 1–2 challenger agents. | Large challenger swarm + economic parameter tuning. |
 | **Payment rail** | The MVP's demonstrated money spine is the **escrow rail on Sepolia**: it holds the fee, releases to the provider on finalize minus a 5% protocol cut, and **refunds the buyer on a proven slash** — the honest-PASS and cheat-SLASH paths both run end-to-end on-chain. The **x402** buyer→provider rail is wired behind a `PAYMENT_RAIL=x402\|escrow` flag and was proven independently in a Phase-0 spike (live USDC settlement on Arbitrum One). | Running **x402 end-to-end integrated on Arbitrum One** (CDP has no Sepolia support) + a hardened x402 facilitator. The migrate is a single-env flip; it needs a funded mainnet deployer. |
