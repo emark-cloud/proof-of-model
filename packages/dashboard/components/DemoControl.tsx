@@ -11,16 +11,12 @@
  * loads the repo `.env`); the browser never sees a key.
  *
  * It polls /api/demo/status to narrate live (cycle number, HONEST/CHEAT) and POSTs
- * /api/demo/{start,stop}. On a hosted deploy with no driver (e.g. Vercel's serverless
- * runtime, where the driver can't be spawned) it can't run the show itself — if
- * NEXT_PUBLIC_DEMO_URL points at a long-running host (Railway) it links there instead;
- * otherwise it degrades to a "run locally" label.
+ * /api/demo/{start,stop}. The component is host-agnostic: a deploy that can't spawn
+ * the driver itself (Vercel) sets DEMO_PROXY_URL so those same routes forward to a
+ * long-running host (Railway) — so the button works in-page here either way. With no
+ * driver and no proxy configured, status reports unavailable and it shows a label.
  */
 import { useCallback, useEffect, useState } from "react";
-
-// Where the interactive driver actually lives, for deploys that can't spawn it
-// themselves (set on Vercel → the Railway URL). Empty on the host that runs it.
-const LIVE_DEMO_URL = process.env.NEXT_PUBLIC_DEMO_URL?.trim() || "";
 
 interface DriverStatus {
   available: boolean;
@@ -161,15 +157,6 @@ export function DemoControl() {
                 ▶ RUN DEMO
               </button>
             )
-          ) : LIVE_DEMO_URL ? (
-            <a
-              href={LIVE_DEMO_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded border border-green-pass/50 bg-green-dim px-4 py-1.5 font-mono text-sm font-bold text-green-pass shadow-glow-green transition hover:bg-green-pass/20"
-            >
-              ▶ RUN DEMO ↗
-            </a>
           ) : (
             <span className="font-mono text-xs text-text-secondary">
               run locally to drive

@@ -7,6 +7,7 @@
  */
 import { NextResponse } from "next/server";
 import { startDriver } from "@/lib/server/driver";
+import { proxyDemo, proxyTarget } from "@/lib/server/proxy";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,5 +27,12 @@ export async function POST(req: Request): Promise<Response> {
   }
   const cheatEvery = clampInt(body.cheatEvery, 2, 20, 4);
   const pauseMs = clampInt(body.pauseMs, 1000, 20_000, 4000);
+  if (proxyTarget()) {
+    return proxyDemo("start", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ cheatEvery, pauseMs }),
+    });
+  }
   return NextResponse.json(startDriver({ cheatEvery, pauseMs }));
 }
