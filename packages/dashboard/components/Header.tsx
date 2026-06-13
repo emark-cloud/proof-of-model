@@ -24,7 +24,7 @@ export function Header() {
           width={567}
           height={104}
           priority
-          className="h-7 w-auto"
+          className="h-14 w-auto"
         />
         <span className="cursor-blink" />
       </Link>
