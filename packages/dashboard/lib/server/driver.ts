@@ -87,11 +87,19 @@ function findRepoRoot(): string | null {
 
 export function driverAvailable(): boolean {
   const root = findRepoRoot();
-  return (
-    !!root &&
-    existsSync(resolve(root, ".env")) &&
-    existsSync(resolve(root, "scripts/demo-driver.ts"))
-  );
+  // The driver script must be on disk to spawn it (full repo present, not just the
+  // dashboard). Its keys come from EITHER a repo-root `.env` (local dev) OR the
+  // process env (a long-running hosted deploy, e.g. Railway — set the four agent
+  // keys as service variables; `loadEnv()` won't clobber them). Vercel's serverless
+  // runtime has neither the repo nor a persistent process, so this stays false there.
+  if (!root || !existsSync(resolve(root, "scripts/demo-driver.ts"))) return false;
+  const hasEnvFile = existsSync(resolve(root, ".env"));
+  const hasEnvKeys =
+    !!process.env.PROVIDER_HONEST_KEY &&
+    !!process.env.PROVIDER_CHEAT_KEY &&
+    !!process.env.BUYER_KEY &&
+    !!process.env.CHALLENGER_KEY;
+  return hasEnvFile || hasEnvKeys;
 }
 
 function pushLog(s: DriverState, chunk: string): void {
